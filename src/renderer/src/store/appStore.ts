@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { toErrorMessage } from '../lib/errorMessage'
 import type {
   Article,
   ArticleListFilter,
@@ -63,7 +64,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     } catch (error) {
       set({
         loading: false,
-        error: error instanceof Error ? error.message : 'Failed to load articles'
+        error: toErrorMessage(error, 'Failed to load articles')
       })
     }
   },
@@ -99,7 +100,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       await window.api.articles.add(url, categoryId)
       await get().loadArticles()
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to save article' })
+      const message = toErrorMessage(error, 'Failed to save article')
+      set({ error: message })
+      throw new Error(message)
     } finally {
       set({ addingArticle: false })
     }

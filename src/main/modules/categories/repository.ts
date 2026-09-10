@@ -40,6 +40,18 @@ export function getCategoryById(id: string): Category | null {
   return row ? rowToCategory(row) : null
 }
 
+export function getCategoryByName(name: string, excludeId?: string): Category | null {
+  const db = getDb()
+  const row = (
+    excludeId
+      ? db
+          .prepare('SELECT * FROM categories WHERE name = ? COLLATE NOCASE AND id != ?')
+          .get(name, excludeId)
+      : db.prepare('SELECT * FROM categories WHERE name = ? COLLATE NOCASE').get(name)
+  ) as unknown as CategoryRow | undefined
+  return row ? rowToCategory(row) : null
+}
+
 export function createCategory(name: string): Category {
   const db = getDb()
   const id = randomUUID()

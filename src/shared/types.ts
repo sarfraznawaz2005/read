@@ -66,6 +66,7 @@ export interface Analytics {
 export interface AppSettings {
   theme: 'light' | 'dark'
   startWithWindows: boolean
+  startMinimized: boolean
   minimizeToTray: boolean
   closeToTray: boolean
   backupFolderPath: string | null

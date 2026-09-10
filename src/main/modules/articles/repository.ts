@@ -128,6 +128,13 @@ export function getArticleById(id: string): Article | null {
   return row ? rowToArticle(row) : null
 }
 
+export function getArticleByUrl(url: string): Article | null {
+  const db = getDb()
+  const row = db.prepare('SELECT * FROM articles WHERE url = ? COLLATE NOCASE').get(url) as
+    unknown as ArticleRow | undefined
+  return row ? rowToArticle(row) : null
+}
+
 export function listArticles(filter: ArticleListFilter): Article[] {
   const db = getDb()
   const clauses: string[] = []

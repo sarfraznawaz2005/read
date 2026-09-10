@@ -81,12 +81,17 @@ export function openInAppBrowser(url: string, parent: BrowserWindow | null): voi
     parent: parent ?? undefined,
     title: 'Read!',
     autoHideMenuBar: true,
+    show: false,
     webPreferences: {
       preload: join(__dirname, '../preload/browserChrome.js'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true
     }
+  })
+
+  win.once('ready-to-show', () => {
+    win.show()
   })
 
   const view = new WebContentsView({

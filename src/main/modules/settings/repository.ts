@@ -4,6 +4,7 @@ import type { AppSettings } from '@shared/types'
 export const DEFAULT_SETTINGS: AppSettings = {
   theme: 'light',
   startWithWindows: false,
+  startMinimized: false,
   minimizeToTray: false,
   closeToTray: false,
   backupFolderPath: null,

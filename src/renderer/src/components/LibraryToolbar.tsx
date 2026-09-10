@@ -9,7 +9,13 @@ const SORT_OPTIONS: { label: string; value: ArticleSort }[] = [
   { label: 'Read Status', value: 'read_status' }
 ]
 
-export function LibraryToolbar(): React.JSX.Element {
+export function LibraryToolbar({
+  viewMode,
+  onChangeViewMode
+}: {
+  viewMode: 'card' | 'list'
+  onChangeViewMode: (mode: 'card' | 'list') => void
+}): React.JSX.Element {
   const { filter, setFilter } = useAppStore()
   const [query, setQuery] = useState(filter.query ?? '')
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -49,6 +55,30 @@ export function LibraryToolbar(): React.JSX.Element {
             </option>
           ))}
         </select>
+      </div>
+      <div className="flex items-center gap-0.5 rounded-lg border border-slate-300 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-800">
+        <button
+          title="Card view"
+          onClick={() => onChangeViewMode('card')}
+          className={`rounded-md px-2 py-1 text-xs ${
+            viewMode === 'card'
+              ? 'bg-indigo-600 text-white'
+              : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700'
+          }`}
+        >
+          ▦
+        </button>
+        <button
+          title="List view"
+          onClick={() => onChangeViewMode('list')}
+          className={`rounded-md px-2 py-1 text-xs ${
+            viewMode === 'list'
+              ? 'bg-indigo-600 text-white'
+              : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700'
+          }`}
+        >
+          ☰
+        </button>
       </div>
     </div>
   )

@@ -31,6 +31,7 @@ export function ReaderView({
   const [fontSize, setFontSize] = useState(18)
   const [background, setBackground] = useState(BACKGROUNDS[0])
   const contentRef = useRef<HighlightableContentHandle>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const [findOpen, setFindOpen] = useState(false)
   const [findQuery, setFindQuery] = useState('')
   const [findCount, setFindCount] = useState(0)
@@ -77,17 +78,19 @@ export function ReaderView({
     contentRef.current?.clearFind()
   }
 
+  function scrollToTop(): void {
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function scrollToBottom(): void {
+    const el = scrollRef.current
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
+  }
+
   const content = (
     <article
-      className={`prose mx-auto w-full max-w-2xl ${background.dark ? 'prose-invert' : ''}`}
+      className={`prose mx-auto w-full max-w-4xl ${background.dark ? 'prose-invert' : ''}`}
       style={{ fontFamily, fontSize: `${fontSize}px` }}
-      onClick={(event) => {
-        const link = (event.target as HTMLElement).closest('a')
-        if (!link) return
-        event.preventDefault()
-        const href = link.getAttribute('href')
-        if (href && !href.startsWith('#')) void window.api.browser.open(href)
-      }}
     >
       <div className="not-prose mb-6 border-b pb-6" style={{ borderColor: `${background.text}33` }}>
         <h1 className="mb-3 text-3xl font-bold leading-tight">{article.title ?? article.url}</h1>
@@ -279,12 +282,36 @@ export function ReaderView({
         />
       </div>
 
-      <div
-        className="flex-1 overflow-y-auto p-6 md:p-12"
-        onScroll={handleScroll}
-        style={{ backgroundColor: background.bg, color: background.text }}
-      >
-        {content}
+      <div className="relative flex-1 overflow-hidden">
+        <div
+          ref={scrollRef}
+          className="h-full overflow-y-auto p-6 md:p-12"
+          onScroll={handleScroll}
+          style={{ backgroundColor: background.bg, color: background.text }}
+        >
+          {content}
+        </div>
+
+        <div className="absolute bottom-4 right-4 flex flex-col gap-2">
+          {progress > 0.02 && (
+            <button
+              onClick={scrollToTop}
+              title="Scroll to top"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 shadow hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            >
+              ↑
+            </button>
+          )}
+          {progress < 0.98 && (
+            <button
+              onClick={scrollToBottom}
+              title="Scroll to bottom"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 shadow hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            >
+              ↓
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -3,6 +3,7 @@ import { getDefaultCategoryId } from '../categories/repository'
 import {
   deleteArticle,
   getArticleById,
+  getArticleByUrl,
   insertPendingArticle,
   listArticles,
   markArticleOpened,
@@ -24,8 +25,12 @@ export async function runExtraction(articleId: string, url: string): Promise<Art
 
 export const articleHandlers = {
   'article:add': async (_event: unknown, url: string, categoryId?: string): Promise<Article> => {
-    const pending = insertPendingArticle(url, categoryId ?? getDefaultCategoryId())
-    return runExtraction(pending.id, url)
+    const trimmed = url.trim()
+    if (getArticleByUrl(trimmed)) {
+      throw new Error('This link has already been saved.')
+    }
+    const pending = insertPendingArticle(trimmed, categoryId ?? getDefaultCategoryId())
+    return runExtraction(pending.id, trimmed)
   },
   'article:retryExtraction': async (_event: unknown, articleId: string): Promise<Article> => {
     const article = getArticleById(articleId)

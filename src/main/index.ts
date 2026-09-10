@@ -46,7 +46,7 @@ function createWindow(): void {
     height: windowState.height,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -55,10 +55,34 @@ function createWindow(): void {
   mainWindow = win
   setMainWindow(win)
 
-  windowState.manage(win)
+  const startMinimized = getSettings().startMinimized
+
+  // windowState.manage() calls win.maximize() when the window was last closed
+  // maximized, which forces a show:false window to appear immediately on Windows,
+  // and calling win.hide() afterward stops 'ready-to-show' from ever firing.
+  // Stub out maximize() while starting minimized so it never runs while hidden -
+  // the deferred 'show' listener below re-applies it once the window is actually shown.
+  let pendingMaximize = false
+  if (startMinimized) {
+    pendingMaximize = windowState.isMaximized
+    const realMaximize = win.maximize.bind(win)
+    win.maximize = () => {}
+    windowState.manage(win)
+    win.maximize = realMaximize
+  } else {
+    windowState.manage(win)
+  }
+
+  win.once('show', () => {
+    if (pendingMaximize) win.maximize()
+  })
 
   win.on('ready-to-show', () => {
-    win.show()
+    if (startMinimized) {
+      ensureTray(win)
+    } else {
+      win.show()
+    }
   })
 
   win.on('minimize', () => {

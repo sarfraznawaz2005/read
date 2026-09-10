@@ -11,6 +11,12 @@ import { useAppStore } from './store/appStore'
 import { useSettingsStore } from './store/settingsStore'
 import { useFeedStore } from './store/feedStore'
 
+const VIEW_MODE_KEY = 'read:libraryViewMode'
+
+function loadStoredViewMode(): 'card' | 'list' {
+  return localStorage.getItem(VIEW_MODE_KEY) === 'list' ? 'list' : 'card'
+}
+
 function App(): React.JSX.Element {
   const { articles, loading, error, loadArticles, loadCategories } = useAppStore()
   const { settings, loadSettings } = useSettingsStore()
@@ -18,8 +24,14 @@ function App(): React.JSX.Element {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [openArticleId, setOpenArticleId] = useState<string | null>(null)
   const [feedsOpen, setFeedsOpen] = useState(false)
+  const [viewMode, setViewModeState] = useState<'card' | 'list'>(loadStoredViewMode)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [analyticsOpen, setAnalyticsOpen] = useState(false)
+
+  function setViewMode(mode: 'card' | 'list'): void {
+    setViewModeState(mode)
+    localStorage.setItem(VIEW_MODE_KEY, mode)
+  }
 
   useEffect(() => {
     void loadCategories()
@@ -83,7 +95,7 @@ function App(): React.JSX.Element {
         onOpenAnalytics={() => setAnalyticsOpen(true)}
       />
       <main className="flex-1 overflow-y-auto p-6">
-        <LibraryToolbar />
+        <LibraryToolbar viewMode={viewMode} onChangeViewMode={setViewMode} />
         {error && (
           <div className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600 dark:bg-rose-900/40 dark:text-rose-300">
             {error}
@@ -100,9 +112,20 @@ function App(): React.JSX.Element {
             <p className="text-sm text-slate-400">Save your first link to get started.</p>
           </div>
         )}
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div
+          className={
+            viewMode === 'card'
+              ? 'grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+              : 'flex flex-col gap-2'
+          }
+        >
           {articles.map((article) => (
-            <ArticleCard key={article.id} article={article} onOpen={setOpenArticleId} />
+            <ArticleCard
+              key={article.id}
+              article={article}
+              onOpen={setOpenArticleId}
+              view={viewMode}
+            />
           ))}
         </div>
       </main>

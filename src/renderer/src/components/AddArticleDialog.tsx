@@ -1,16 +1,23 @@
 import { useState, type FormEvent } from 'react'
 import { useAppStore } from '../store/appStore'
+import { toErrorMessage } from '../lib/errorMessage'
 
 export function AddArticleDialog({ onClose }: { onClose: () => void }): React.JSX.Element {
   const { categories, addArticle, addingArticle } = useAppStore()
   const [url, setUrl] = useState('')
   const [categoryId, setCategoryId] = useState('')
+  const [formError, setFormError] = useState<string | null>(null)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault()
     if (!url.trim()) return
-    await addArticle(url.trim(), categoryId || undefined)
-    onClose()
+    setFormError(null)
+    try {
+      await addArticle(url.trim(), categoryId || undefined)
+      onClose()
+    } catch (error) {
+      setFormError(toErrorMessage(error, 'Failed to save article'))
+    }
   }
 
   return (
@@ -58,6 +65,12 @@ export function AddArticleDialog({ onClose }: { onClose: () => void }): React.JS
                 ))}
             </select>
           </div>
+
+          {formError && (
+            <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600 dark:bg-rose-900/40 dark:text-rose-300">
+              {formError}
+            </p>
+          )}
         </div>
 
         <div className="mt-6 flex justify-end gap-3">

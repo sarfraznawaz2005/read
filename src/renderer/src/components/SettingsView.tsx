@@ -124,6 +124,20 @@ export function SettingsView({ onBack }: { onBack: () => void }): React.JSX.Elem
             </label>
             <label className="flex cursor-pointer items-center justify-between gap-4 border-t border-slate-200 pt-4 dark:border-slate-700">
               <div>
+                <div className="font-medium">Start Minimized to Tray</div>
+                <div className="mt-0.5 text-[11px] text-slate-400">
+                  Don&apos;t show the window when the app starts
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                checked={settings.startMinimized}
+                onChange={(event) => updateSettings({ startMinimized: event.target.checked })}
+                className="h-4 w-4 flex-shrink-0"
+              />
+            </label>
+            <label className="flex cursor-pointer items-center justify-between gap-4 border-t border-slate-200 pt-4 dark:border-slate-700">
+              <div>
                 <div className="font-medium">Minimize to System Tray</div>
                 <div className="mt-0.5 text-[11px] text-slate-400">
                   Keep running in the tray when minimized

@@ -2,6 +2,7 @@ import { useState, type KeyboardEvent } from 'react'
 import type { ArticleStatusFilter, Category } from '@shared/types'
 import { useAppStore } from '../store/appStore'
 import { useFeedStore } from '../store/feedStore'
+import { toErrorMessage } from '../lib/errorMessage'
 
 const STATUS_FILTERS: { label: string; value: ArticleStatusFilter }[] = [
   { label: 'All Articles', value: 'all' },
@@ -28,29 +29,49 @@ export function Sidebar({
   )
   const [adding, setAdding] = useState(false)
   const [newName, setNewName] = useState('')
+  const [addError, setAddError] = useState<string | null>(null)
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
+  const [renameError, setRenameError] = useState<string | null>(null)
 
   function closeAdd(): void {
     setAdding(false)
     setNewName('')
+    setAddError(null)
   }
 
-  function submitAdd(): void {
+  async function submitAdd(): Promise<void> {
     const name = newName.trim()
-    if (name) void createCategory(name)
-    closeAdd()
+    if (!name) {
+      closeAdd()
+      return
+    }
+    try {
+      await createCategory(name)
+      closeAdd()
+    } catch (error) {
+      setAddError(toErrorMessage(error, 'Could not add category'))
+    }
   }
 
   function closeRename(): void {
     setRenamingId(null)
     setRenameValue('')
+    setRenameError(null)
   }
 
-  function submitRename(id: string): void {
+  async function submitRename(id: string): Promise<void> {
     const name = renameValue.trim()
-    if (name) void renameCategory(id, name)
-    closeRename()
+    if (!name) {
+      closeRename()
+      return
+    }
+    try {
+      await renameCategory(id, name)
+      closeRename()
+    } catch (error) {
+      setRenameError(toErrorMessage(error, 'Could not rename category'))
+    }
   }
 
   function handleKey(
@@ -127,29 +148,40 @@ export function Sidebar({
         </div>
         <div className="flex flex-col gap-1.5 pr-3 text-xs">
           {adding && (
-            <input
-              autoFocus
-              value={newName}
-              onChange={(event) => setNewName(event.target.value)}
-              onKeyDown={(event) => handleKey(event, submitAdd, closeAdd)}
-              onBlur={closeAdd}
-              placeholder="Category name"
-              className="w-full rounded border border-indigo-300 px-2.5 py-1.5 text-xs focus:outline-none"
-            />
+            <div>
+              <input
+                autoFocus
+                value={newName}
+                onChange={(event) => {
+                  setNewName(event.target.value)
+                  if (addError) setAddError(null)
+                }}
+                onKeyDown={(event) => handleKey(event, submitAdd, closeAdd)}
+                onBlur={closeAdd}
+                placeholder="Category name"
+                className="w-full rounded border border-indigo-300 px-2.5 py-1.5 text-xs focus:outline-none"
+              />
+              {addError && <p className="mt-1 text-[11px] text-rose-600">{addError}</p>}
+            </div>
           )}
           {categories.map((category) =>
             renamingId === category.id ? (
-              <input
-                key={category.id}
-                autoFocus
-                value={renameValue}
-                onChange={(event) => setRenameValue(event.target.value)}
-                onKeyDown={(event) =>
-                  handleKey(event, () => submitRename(category.id), closeRename)
-                }
-                onBlur={closeRename}
-                className="w-full rounded border border-indigo-300 px-2.5 py-1.5 text-xs focus:outline-none"
-              />
+              <div key={category.id}>
+                <input
+                  autoFocus
+                  value={renameValue}
+                  onChange={(event) => {
+                    setRenameValue(event.target.value)
+                    if (renameError) setRenameError(null)
+                  }}
+                  onKeyDown={(event) =>
+                    handleKey(event, () => submitRename(category.id), closeRename)
+                  }
+                  onBlur={closeRename}
+                  className="w-full rounded border border-indigo-300 px-2.5 py-1.5 text-xs focus:outline-none"
+                />
+                {renameError && <p className="mt-1 text-[11px] text-rose-600">{renameError}</p>}
+              </div>
             ) : (
               <div
                 key={category.id}
