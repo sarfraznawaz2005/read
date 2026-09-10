@@ -1,0 +1,12 @@
+node_modules
+dist
+out
+.DS_Store
+Thumbs.db
+.eslintcache
+*.tsbuildinfo
+*.log*
+.env
+.env.*
+.e2e-shots*
+.e2e-userdata*
