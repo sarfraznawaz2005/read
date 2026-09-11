@@ -4,13 +4,17 @@ import { useAppStore } from '../store/appStore'
 import { HighlightableContent, type HighlightableContentHandle } from './HighlightableContent'
 
 const FONT_FAMILIES = [
-  { label: 'Serif', value: 'Georgia, "Times New Roman", serif' },
-  { label: 'Sans', value: 'Inter, system-ui, sans-serif' },
-  { label: 'Monospace', value: '"Fira Code", Consolas, monospace' }
+  { label: 'Georgia', value: 'Georgia, Cambria, "Times New Roman", serif' },
+  { label: 'Cambria', value: 'Cambria, Georgia, "Times New Roman", serif' },
+  { label: 'Calibri', value: 'Calibri, "Segoe UI", sans-serif' },
+  { label: 'Segoe UI', value: '"Segoe UI", Calibri, sans-serif' },
+  { label: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
+  { label: 'Consolas', value: 'Consolas, "Cascadia Code", monospace' }
 ]
 
 const BACKGROUNDS = [
   { label: 'Paper White', bg: '#ffffff', text: '#1e293b', dark: false },
+  { label: 'Light Gray', bg: '#f3f4f6', text: '#1e293b', dark: false },
   { label: 'Sepia', bg: '#f8f1e3', text: '#3c2f1f', dark: false },
   { label: 'Slate Dark', bg: '#1e293b', text: '#f1f5f9', dark: true },
   { label: 'OLED Black', bg: '#000000', text: '#e2e8f0', dark: true }
@@ -18,6 +22,25 @@ const BACKGROUNDS = [
 
 const MIN_FONT_SIZE = 14
 const MAX_FONT_SIZE = 28
+
+const FONT_FAMILY_KEY = 'read:reader:fontFamily'
+const FONT_SIZE_KEY = 'read:reader:fontSize'
+const BACKGROUND_KEY = 'read:reader:background'
+
+function loadStoredFontFamily(): string {
+  const stored = localStorage.getItem(FONT_FAMILY_KEY)
+  return FONT_FAMILIES.some((f) => f.value === stored) ? (stored as string) : FONT_FAMILIES[0].value
+}
+
+function loadStoredFontSize(): number {
+  const stored = Number(localStorage.getItem(FONT_SIZE_KEY))
+  return stored >= MIN_FONT_SIZE && stored <= MAX_FONT_SIZE ? stored : 18
+}
+
+function loadStoredBackground(): (typeof BACKGROUNDS)[number] {
+  const stored = localStorage.getItem(BACKGROUND_KEY)
+  return BACKGROUNDS.find((b) => b.label === stored) ?? BACKGROUNDS[0]
+}
 
 export function ReaderView({
   article,
@@ -27,9 +50,27 @@ export function ReaderView({
   onBack: () => void
 }): React.JSX.Element {
   const { retryExtraction, markOpened, highlights, categories, updateStatus } = useAppStore()
-  const [fontFamily, setFontFamily] = useState(FONT_FAMILIES[0].value)
-  const [fontSize, setFontSize] = useState(18)
-  const [background, setBackground] = useState(BACKGROUNDS[0])
+  const [fontFamily, setFontFamilyState] = useState(loadStoredFontFamily)
+  const [fontSize, setFontSizeState] = useState(loadStoredFontSize)
+  const [background, setBackgroundState] = useState(loadStoredBackground)
+
+  function setFontFamily(value: string): void {
+    setFontFamilyState(value)
+    localStorage.setItem(FONT_FAMILY_KEY, value)
+  }
+
+  function setFontSize(updater: (size: number) => number): void {
+    setFontSizeState((size) => {
+      const next = updater(size)
+      localStorage.setItem(FONT_SIZE_KEY, String(next))
+      return next
+    })
+  }
+
+  function setBackground(option: (typeof BACKGROUNDS)[number]): void {
+    setBackgroundState(option)
+    localStorage.setItem(BACKGROUND_KEY, option.label)
+  }
   const contentRef = useRef<HighlightableContentHandle>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const [findOpen, setFindOpen] = useState(false)
