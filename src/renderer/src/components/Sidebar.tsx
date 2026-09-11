@@ -1,4 +1,5 @@
 import { useState, type KeyboardEvent } from 'react'
+import { BarChart3, Pencil, Rss, Settings, X } from 'lucide-react'
 import type { ArticleStatusFilter, Category } from '@shared/types'
 import { useAppStore } from '../store/appStore'
 import { useFeedStore } from '../store/feedStore'
@@ -94,18 +95,18 @@ export function Sidebar({
       <div className="border-b border-slate-200 p-3 dark:border-slate-800">
         <button
           onClick={onAddClick}
-          className="w-full cursor-pointer bg-indigo-600 px-3 py-2 text-xs font-medium text-white shadow-sm hover:bg-indigo-500"
+          className="w-full cursor-pointer rounded-md bg-indigo-600 px-3 py-2 text-xs font-medium text-white shadow-sm hover:bg-indigo-500"
         >
           + Save New Article
         </button>
       </div>
 
-      <div className="border-b border-slate-200 py-1.5 pl-3 pr-3 dark:border-slate-800">
+      <div className="border-b border-slate-200 py-1.5 dark:border-slate-800">
         <button
           onClick={onOpenFeeds}
-          className="flex w-full cursor-pointer items-center gap-2 py-1.5 text-left text-xs text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+          className="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-left text-xs text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
         >
-          <span>📡</span>
+          <Rss className="h-3.5 w-3.5" />
           <span className="flex-1">Feeds</span>
           {totalUnread > 0 && (
             <span className="rounded-full bg-indigo-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
@@ -115,8 +116,8 @@ export function Sidebar({
         </button>
       </div>
 
-      <div className="py-3 pl-3 pr-3">
-        <div className="px-0 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+      <div className="py-3">
+        <div className="px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
           Library
         </div>
         <div className="flex flex-col gap-0.5">
@@ -124,7 +125,7 @@ export function Sidebar({
             <button
               key={item.value}
               onClick={() => setFilter({ ...filter, status: item.value, categoryId: undefined })}
-              className={`flex w-full cursor-pointer items-center justify-between py-1.5 text-left text-xs ${
+              className={`flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs ${
                 filter.status === item.value && !filter.categoryId
                   ? 'bg-indigo-50 font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
                   : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
@@ -136,8 +137,8 @@ export function Sidebar({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto pl-3 pt-2">
-        <div className="flex items-center justify-between py-1 pr-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+      <div className="flex-1 overflow-y-auto pt-2">
+        <div className="flex items-center justify-between px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
           <span>Categories</span>
           <button
             onClick={() => setAdding(true)}
@@ -146,9 +147,9 @@ export function Sidebar({
             + Add
           </button>
         </div>
-        <div className="flex flex-col gap-1.5 pr-3 text-xs">
+        <div className="flex flex-col gap-1.5 text-xs">
           {adding && (
-            <div>
+            <div className="px-3">
               <input
                 autoFocus
                 value={newName}
@@ -166,7 +167,7 @@ export function Sidebar({
           )}
           {categories.map((category) =>
             renamingId === category.id ? (
-              <div key={category.id}>
+              <div key={category.id} className="px-3">
                 <input
                   autoFocus
                   value={renameValue}
@@ -185,7 +186,7 @@ export function Sidebar({
             ) : (
               <div
                 key={category.id}
-                className={`group flex items-center justify-between py-1.5 ${
+                className={`group flex items-center justify-between px-3 py-1.5 ${
                   filter.categoryId === category.id
                     ? 'bg-slate-200 font-medium text-indigo-700 dark:bg-slate-800 dark:text-indigo-300'
                     : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
@@ -207,14 +208,14 @@ export function Sidebar({
                       }}
                       className="cursor-pointer font-bold text-slate-400 hover:text-indigo-600"
                     >
-                      ✎
+                      <Pencil className="h-3 w-3" />
                     </button>
                     <button
                       title="Delete"
                       onClick={() => handleDeleteCategory(category)}
                       className="cursor-pointer font-bold text-slate-400 hover:text-rose-600"
                     >
-                      ✕
+                      <X className="h-3 w-3" />
                     </button>
                   </span>
                 )}
@@ -229,7 +230,7 @@ export function Sidebar({
           onClick={onOpenSettings}
           className="flex flex-1 cursor-pointer items-center gap-2 py-1.5 text-left text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
-          <span>⚙️</span>
+          <Settings className="h-3.5 w-3.5" />
           <span>Settings</span>
         </button>
         <button
@@ -237,7 +238,7 @@ export function Sidebar({
           className="flex flex-1 cursor-pointer items-center justify-end gap-2 py-1.5 text-right text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <span>Analytics</span>
-          <span>📊</span>
+          <BarChart3 className="h-3.5 w-3.5" />
         </button>
       </div>
     </aside>

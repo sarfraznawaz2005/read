@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { ArrowLeft, Flame } from 'lucide-react'
 import { useAnalyticsStore } from '../store/analyticsStore'
 
 function weekdayLabel(dateStr: string): string {
@@ -37,9 +38,10 @@ export function AnalyticsView({ onBack }: { onBack: () => void }): React.JSX.Ele
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
-            className="text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+            className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
           >
-            ← Back to Library
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Library
           </button>
           <span className="h-4 w-px bg-slate-300 dark:bg-slate-700" />
           <h2 className="text-sm font-bold">Reading Habit Analytics & Insights</h2>
@@ -62,7 +64,7 @@ export function AnalyticsView({ onBack }: { onBack: () => void }): React.JSX.Ele
             <div className="text-xs font-medium text-slate-400">Current Reading Streak</div>
             <div className="mt-3 flex items-baseline gap-2 font-mono text-3xl font-extrabold text-amber-500 dark:text-amber-400">
               {analytics.streakDays} {analytics.streakDays === 1 ? 'Day' : 'Days'}
-              <span className="text-lg">🔥</span>
+              <Flame className="h-5 w-5" />
             </div>
           </div>
 

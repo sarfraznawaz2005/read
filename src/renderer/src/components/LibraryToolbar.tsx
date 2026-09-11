@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { LayoutGrid, List } from 'lucide-react'
 import type { ArticleSort } from '@shared/types'
 import { useAppStore } from '../store/appStore'
 
@@ -60,24 +61,24 @@ export function LibraryToolbar({
         <button
           title="Card view"
           onClick={() => onChangeViewMode('card')}
-          className={`rounded-md px-2 py-1 text-xs ${
+          className={`inline-flex items-center justify-center rounded-md px-2 py-1 text-xs ${
             viewMode === 'card'
               ? 'bg-indigo-600 text-white'
               : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700'
           }`}
         >
-          ▦
+          <LayoutGrid className="h-3.5 w-3.5" />
         </button>
         <button
           title="List view"
           onClick={() => onChangeViewMode('list')}
-          className={`rounded-md px-2 py-1 text-xs ${
+          className={`inline-flex items-center justify-center rounded-md px-2 py-1 text-xs ${
             viewMode === 'list'
               ? 'bg-indigo-600 text-white'
               : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700'
           }`}
         >
-          ☰
+          <List className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>

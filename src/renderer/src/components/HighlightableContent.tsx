@@ -1,4 +1,13 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import {
+  Check,
+  ChevronRight,
+  Clipboard,
+  ExternalLink,
+  Highlighter,
+  MessageSquarePlus,
+  X
+} from 'lucide-react'
 import type { Article, HighlightColor, TextQuoteAnchor } from '@shared/types'
 import { useAppStore } from '../store/appStore'
 import { computeAnchorFromSelection, HIGHLIGHT_SWATCH, renderHighlights } from '../lib/highlightDom'
@@ -247,9 +256,10 @@ export const HighlightableContent = forwardRef<HighlightableContentHandle, { art
             <span className="mx-0.5 h-4 w-px bg-slate-200 dark:bg-slate-700" />
             <button
               onClick={handleAddNote}
-              className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
+              className="flex items-center gap-1 rounded bg-slate-100 px-2 py-1 text-xs text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
             >
-              💬 Add Note
+              <MessageSquarePlus className="h-3.5 w-3.5" />
+              Add Note
             </button>
           </div>
         )}
@@ -275,8 +285,11 @@ export const HighlightableContent = forwardRef<HighlightableContentHandle, { art
                     : 'opacity-40'
                 }`}
               >
-                <span>🖍️ Highlight</span>
-                <span className="text-[10px] text-slate-400">▶</span>
+                <span className="flex items-center gap-1.5">
+                  <Highlighter className="h-3.5 w-3.5" />
+                  Highlight
+                </span>
+                <ChevronRight className="h-3 w-3 text-slate-400" />
               </div>
               {contextMenu.anchor && (
                 <div className="absolute left-full top-0 ml-1 hidden w-32 rounded-xl border border-slate-200 bg-white py-1 shadow-2xl group-hover:block dark:border-slate-700 dark:bg-slate-800">
@@ -301,7 +314,8 @@ export const HighlightableContent = forwardRef<HighlightableContentHandle, { art
               onClick={handleMenuAddComment}
               className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-indigo-600 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-700"
             >
-              💬 Add Comment Note
+              <MessageSquarePlus className="h-3.5 w-3.5" />
+              Add Comment Note
             </button>
             {contextMenu.linkHref && (
               <>
@@ -310,13 +324,15 @@ export const HighlightableContent = forwardRef<HighlightableContentHandle, { art
                   onClick={handleMenuOpenLink}
                   className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-indigo-600 hover:text-white"
                 >
-                  🔗 Open Link
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Open Link
                 </button>
                 <button
                   onClick={handleMenuCopyLink}
                   className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-indigo-600 hover:text-white"
                 >
-                  📋 Copy Link Address
+                  <Clipboard className="h-3.5 w-3.5" />
+                  Copy Link Address
                 </button>
               </>
             )}
@@ -325,7 +341,8 @@ export const HighlightableContent = forwardRef<HighlightableContentHandle, { art
               onClick={handleMenuToggleRead}
               className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-indigo-600 hover:text-white"
             >
-              {article.isRead ? '✓ Mark as Unread' : '✓ Mark as Read'}
+              <Check className="h-3.5 w-3.5" />
+              {article.isRead ? 'Mark as Unread' : 'Mark as Read'}
             </button>
           </div>
         )}
@@ -350,7 +367,7 @@ export const HighlightableContent = forwardRef<HighlightableContentHandle, { art
                 onClick={() => setCommentPopover(null)}
                 className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
-                ✕
+                <X className="h-3.5 w-3.5" />
               </button>
             </div>
 

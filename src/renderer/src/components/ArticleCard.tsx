@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Archive, ArchiveRestore, CheckCircle2, Circle, RotateCw, Star, Trash2 } from 'lucide-react'
 import type { Article } from '@shared/types'
 import { useAppStore } from '../store/appStore'
 
@@ -50,7 +51,12 @@ export function ArticleCard({
         }}
         className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-indigo-600 hover:text-white"
       >
-        {article.isRead ? '● Mark Unread' : '○ Mark Read'}
+        {article.isRead ? (
+          <CheckCircle2 className="h-3.5 w-3.5" />
+        ) : (
+          <Circle className="h-3.5 w-3.5" />
+        )}
+        {article.isRead ? 'Mark Unread' : 'Mark Read'}
       </button>
       <button
         onClick={() => {
@@ -59,7 +65,8 @@ export function ArticleCard({
         }}
         className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-indigo-600 hover:text-white"
       >
-        {article.isFavorite ? '★ Unfavorite' : '★ Favorite'}
+        <Star className="h-3.5 w-3.5" fill={article.isFavorite ? 'currentColor' : 'none'} />
+        {article.isFavorite ? 'Unfavorite' : 'Favorite'}
       </button>
       <button
         onClick={() => {
@@ -68,7 +75,12 @@ export function ArticleCard({
         }}
         className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-indigo-600 hover:text-white"
       >
-        {article.isArchived ? '⇤ Unarchive' : '⇥ Archive'}
+        {article.isArchived ? (
+          <ArchiveRestore className="h-3.5 w-3.5" />
+        ) : (
+          <Archive className="h-3.5 w-3.5" />
+        )}
+        {article.isArchived ? 'Unarchive' : 'Archive'}
       </button>
       {article.extractionStatus === 'failed' && (
         <button
@@ -78,14 +90,16 @@ export function ArticleCard({
           }}
           className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-indigo-600 hover:text-white"
         >
-          ↻ Retry
+          <RotateCw className="h-3.5 w-3.5" />
+          Retry
         </button>
       )}
       <button
         onClick={handleDelete}
         className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-rose-600 hover:bg-rose-600 hover:text-white"
       >
-        🗑 Delete
+        <Trash2 className="h-3.5 w-3.5" />
+        Delete
       </button>
     </div>
   )
@@ -134,11 +148,12 @@ export function ArticleCard({
             onClick={() => updateStatus(article.id, { isFavorite: !article.isFavorite })}
             className={
               article.isFavorite
-                ? 'cursor-pointer font-medium text-amber-500'
-                : 'cursor-pointer hover:text-indigo-600'
+                ? 'flex cursor-pointer items-center gap-1 font-medium text-amber-500'
+                : 'flex cursor-pointer items-center gap-1 hover:text-indigo-600'
             }
           >
-            ★ Favorite
+            <Star className="h-3.5 w-3.5" fill={article.isFavorite ? 'currentColor' : 'none'} />
+            Favorite
           </button>
           <button
             onClick={() => updateStatus(article.id, { isArchived: !article.isArchived })}
@@ -154,7 +169,10 @@ export function ArticleCard({
               Retry
             </button>
           )}
-          <button onClick={handleDelete} className="cursor-pointer text-rose-500 hover:text-rose-700">
+          <button
+            onClick={handleDelete}
+            className="cursor-pointer text-rose-500 hover:text-rose-700"
+          >
             Delete
           </button>
         </div>
@@ -186,9 +204,7 @@ export function ArticleCard({
               <span className="text-[10px] text-rose-500">Failed</span>
             )}
             {article.author && (
-              <span className="text-xs text-slate-800 dark:text-slate-400">
-                {article.author}
-              </span>
+              <span className="text-xs text-slate-800 dark:text-slate-400">{article.author}</span>
             )}
           </div>
         </div>
@@ -215,11 +231,12 @@ export function ArticleCard({
             onClick={() => updateStatus(article.id, { isFavorite: !article.isFavorite })}
             className={
               article.isFavorite
-                ? 'cursor-pointer font-medium text-amber-500'
-                : 'cursor-pointer hover:text-indigo-600'
+                ? 'flex cursor-pointer items-center gap-1 font-medium text-amber-500'
+                : 'flex cursor-pointer items-center gap-1 hover:text-indigo-600'
             }
           >
-            ★ Favorite
+            <Star className="h-3.5 w-3.5" fill={article.isFavorite ? 'currentColor' : 'none'} />
+            Favorite
           </button>
           <button
             onClick={() => updateStatus(article.id, { isArchived: !article.isArchived })}
@@ -237,7 +254,10 @@ export function ArticleCard({
               Retry
             </button>
           )}
-          <button onClick={handleDelete} className="cursor-pointer text-rose-500 hover:text-rose-700">
+          <button
+            onClick={handleDelete}
+            className="cursor-pointer text-rose-500 hover:text-rose-700"
+          >
             Delete
           </button>
         </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { AppWindow, ArrowLeft, Palette, Rss, Save, Settings } from 'lucide-react'
 import { useSettingsStore } from '../store/settingsStore'
 import { useFeedStore } from '../store/feedStore'
 
@@ -65,9 +66,10 @@ export function SettingsView({ onBack }: { onBack: () => void }): React.JSX.Elem
       <header className="flex items-center gap-4 border-b border-slate-200 px-8 py-4 dark:border-slate-800">
         <button
           onClick={onBack}
-          className="text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+          className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
         >
-          ← Back to Library
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to Library
         </button>
         <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Preferences</h2>
       </header>
@@ -82,7 +84,10 @@ export function SettingsView({ onBack }: { onBack: () => void }): React.JSX.Elem
 
           {/* Appearance */}
           <section className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-slate-800/40">
-            <h3 className="text-sm font-bold">🎨 Appearance & Theme</h3>
+            <h3 className="flex items-center gap-1.5 text-sm font-bold">
+              <Palette className="h-4 w-4" />
+              Appearance & Theme
+            </h3>
             <div className="grid grid-cols-2 gap-4">
               {(['light', 'dark'] as const).map((theme) => (
                 <button
@@ -107,7 +112,10 @@ export function SettingsView({ onBack }: { onBack: () => void }): React.JSX.Elem
 
           {/* Windows integration */}
           <section className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/70 p-6 text-xs dark:border-slate-800 dark:bg-slate-800/40">
-            <h3 className="text-sm font-bold">🪟 Windows OS Integration</h3>
+            <h3 className="flex items-center gap-1.5 text-sm font-bold">
+              <AppWindow className="h-4 w-4" />
+              Windows OS Integration
+            </h3>
             <label className="flex cursor-pointer items-center justify-between gap-4">
               <div>
                 <div className="font-medium">Start with Windows</div>
@@ -168,7 +176,10 @@ export function SettingsView({ onBack }: { onBack: () => void }): React.JSX.Elem
 
           {/* Feed settings */}
           <section className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/70 p-6 text-xs dark:border-slate-800 dark:bg-slate-800/40">
-            <h3 className="text-sm font-bold">📡 Feed Settings</h3>
+            <h3 className="flex items-center gap-1.5 text-sm font-bold">
+              <Rss className="h-4 w-4" />
+              Feed Settings
+            </h3>
             <div className="grid grid-cols-4 gap-4">
               <label className="block">
                 <div className="mb-1.5 font-medium">Scan interval (min)</div>
@@ -238,7 +249,10 @@ export function SettingsView({ onBack }: { onBack: () => void }): React.JSX.Elem
           {/* Backup */}
           <section className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/70 p-6 text-xs dark:border-slate-800 dark:bg-slate-800/40">
             <div className="flex items-center justify-between gap-4">
-              <h3 className="text-sm font-bold">💾 Automatic Rolling Backup (Max 5)</h3>
+              <h3 className="flex items-center gap-1.5 text-sm font-bold">
+                <Save className="h-4 w-4" />
+                Automatic Rolling Backup (Max 5)
+              </h3>
               <button
                 onClick={handleBackupNow}
                 disabled={backingUp || !settings.backupFolderPath}
@@ -283,7 +297,10 @@ export function SettingsView({ onBack }: { onBack: () => void }): React.JSX.Elem
 
           {/* Import/Export settings */}
           <section className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/70 p-6 text-xs dark:border-slate-800 dark:bg-slate-800/40">
-            <h3 className="text-sm font-bold">⚙️ Import & Export Settings (JSON)</h3>
+            <h3 className="flex items-center gap-1.5 text-sm font-bold">
+              <Settings className="h-4 w-4" />
+              Import & Export Settings (JSON)
+            </h3>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => importSettings()}

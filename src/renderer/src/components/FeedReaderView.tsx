@@ -1,4 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
+import {
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Circle,
+  Copy,
+  Download,
+  Link,
+  ListChecks,
+  Newspaper,
+  Pencil,
+  RotateCw,
+  Trash2
+} from 'lucide-react'
 import type { FeedItem } from '@shared/types'
 import { useFeedStore } from '../store/feedStore'
 import { useAppStore } from '../store/appStore'
@@ -227,9 +245,10 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
           {!collapsed && (
             <button
               onClick={onBack}
-              className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+              className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
             >
-              ← Library
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Library
             </button>
           )}
           <div className="flex items-center gap-1">
@@ -238,14 +257,14 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
                 <button
                   title="Select feeds to delete"
                   onClick={toggleSelectMode}
-                  className={`rounded p-1 text-xs font-bold hover:bg-slate-200 ${selectMode ? 'text-indigo-600' : 'text-slate-500'}`}
+                  className={`inline-flex items-center justify-center rounded p-1 font-bold hover:bg-slate-200 ${selectMode ? 'text-indigo-600' : 'text-slate-500'}`}
                 >
-                  ☑
+                  <ListChecks className="h-4 w-4" />
                 </button>
                 <button
                   title="Add feed"
                   onClick={() => setAddingFeed(true)}
-                  className="rounded p-1 text-xs font-bold text-slate-500 hover:bg-slate-200"
+                  className="rounded p-1 text-sm font-bold text-slate-500 hover:bg-slate-200"
                 >
                   +
                 </button>
@@ -254,9 +273,13 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
             <button
               title={collapsed ? 'Expand' : 'Collapse'}
               onClick={() => setCollapsed(!collapsed)}
-              className="rounded p-1 text-xs text-slate-500 hover:bg-slate-200"
+              className="inline-flex items-center justify-center rounded p-1 text-slate-500 hover:bg-slate-200"
             >
-              {collapsed ? '▶' : '◀'}
+              {collapsed ? (
+                <ChevronRight className="h-4 w-4" />
+              ) : (
+                <ChevronLeft className="h-4 w-4" />
+              )}
             </button>
           </div>
         </div>
@@ -280,26 +303,28 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
                 </button>
               </div>
             )}
-            <div className="flex-1 space-y-0.5 overflow-y-auto p-2">
+            <div className="flex-1 space-y-0.5 overflow-y-auto py-2">
               {addingFeed && (
-                <input
-                  autoFocus
-                  value={feedUrlDraft}
-                  onChange={(event) => setFeedUrlDraft(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') submitAddFeed()
-                    if (event.key === 'Escape') {
+                <div className="px-3">
+                  <input
+                    autoFocus
+                    value={feedUrlDraft}
+                    onChange={(event) => setFeedUrlDraft(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') submitAddFeed()
+                      if (event.key === 'Escape') {
+                        setAddingFeed(false)
+                        setFeedUrlDraft('')
+                      }
+                    }}
+                    onBlur={() => {
                       setAddingFeed(false)
                       setFeedUrlDraft('')
-                    }
-                  }}
-                  onBlur={() => {
-                    setAddingFeed(false)
-                    setFeedUrlDraft('')
-                  }}
-                  placeholder="https://example.com/feed.xml"
-                  className="w-full rounded border border-indigo-300 px-2 py-1.5 text-xs focus:outline-none dark:border-indigo-700 dark:bg-slate-900 dark:text-slate-200"
-                />
+                    }}
+                    placeholder="https://example.com/feed.xml"
+                    className="w-full rounded border border-indigo-300 px-2 py-1.5 text-xs focus:outline-none dark:border-indigo-700 dark:bg-slate-900 dark:text-slate-200"
+                  />
+                </div>
               )}
 
               {!selectMode && (
@@ -308,30 +333,34 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
                     void selectFeed(null)
                     setSelectedItemId(null)
                   }}
-                  className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs ${
+                  className={`flex w-full items-center justify-between px-3 py-1.5 text-xs ${
                     selectedFeedId === null
-                      ? 'border border-indigo-200 bg-indigo-50 font-medium text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
+                      ? 'bg-indigo-50 font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
                       : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
                   }`}
                 >
-                  <span>🗞️ All Entries</span>
+                  <span className="flex items-center gap-1.5">
+                    <Newspaper className="h-3.5 w-3.5" />
+                    All Entries
+                  </span>
                 </button>
               )}
 
               {feeds.map((feed) =>
                 renamingFeedId === feed.id ? (
-                  <input
-                    key={feed.id}
-                    autoFocus
-                    value={renameValue}
-                    onChange={(event) => setRenameValue(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') submitRenameFeed()
-                      if (event.key === 'Escape') setRenamingFeedId(null)
-                    }}
-                    onBlur={submitRenameFeed}
-                    className="w-full rounded border border-indigo-300 px-2.5 py-1.5 text-xs focus:outline-none dark:border-indigo-700 dark:bg-slate-900 dark:text-slate-200"
-                  />
+                  <div key={feed.id} className="px-3">
+                    <input
+                      autoFocus
+                      value={renameValue}
+                      onChange={(event) => setRenameValue(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') submitRenameFeed()
+                        if (event.key === 'Escape') setRenamingFeedId(null)
+                      }}
+                      onBlur={submitRenameFeed}
+                      className="w-full rounded border border-indigo-300 px-2.5 py-1.5 text-xs focus:outline-none dark:border-indigo-700 dark:bg-slate-900 dark:text-slate-200"
+                    />
+                  </div>
                 ) : (
                   <div
                     key={feed.id}
@@ -340,9 +369,9 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
                       event.preventDefault()
                       setFeedContextMenu({ x: event.clientX, y: event.clientY, feedId: feed.id })
                     }}
-                    className={`group flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs ${
+                    className={`group flex items-center justify-between px-3 py-1.5 text-xs ${
                       selectedFeedId === feed.id
-                        ? 'border border-indigo-200 bg-indigo-50 font-medium text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
+                        ? 'bg-indigo-50 font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
                         : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
                     }`}
                   >
@@ -368,7 +397,9 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
                         feed.lastError ? 'font-bold text-rose-600 dark:text-rose-400' : ''
                       }`}
                     >
-                      {feed.lastError && <span className="mr-1">⚠</span>}
+                      {feed.lastError && (
+                        <AlertTriangle className="mr-1 inline h-3 w-3 flex-shrink-0" />
+                      )}
                       {feed.title}
                     </button>
                     {feed.unreadCount > 0 && (
@@ -402,7 +433,8 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
             }}
             className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-indigo-600 hover:text-white"
           >
-            ✎ Rename
+            <Pencil className="h-3.5 w-3.5" />
+            Rename
           </button>
           <button
             onClick={() => {
@@ -411,7 +443,8 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
             }}
             className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-rose-600 hover:bg-rose-600 hover:text-white"
           >
-            🗑 Delete
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete
           </button>
         </div>
       )}
@@ -427,17 +460,17 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
               title="Mark all as read"
               onClick={() => void markAllRead(selectedFeedId ?? undefined)}
               disabled={feedItems.every((item) => item.isRead)}
-              className="rounded px-1.5 py-0.5 text-slate-500 hover:bg-slate-200 disabled:opacity-40 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="inline-flex items-center justify-center rounded px-1.5 py-0.5 text-black hover:bg-slate-200 disabled:opacity-70 dark:text-white dark:hover:bg-slate-800"
             >
-              ✓
+              <Check className="h-3.5 w-3.5" />
             </button>
             <button
               title="Refresh all feeds"
               onClick={handleRefreshAll}
               disabled={refreshing}
-              className="rounded px-1.5 py-0.5 text-slate-500 hover:bg-slate-200 disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="inline-flex items-center justify-center rounded px-1.5 py-0.5 text-slate-500 hover:bg-slate-200 disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800"
             >
-              {refreshing ? '…' : '🔄'}
+              {refreshing ? '…' : <RotateCw className="h-3.5 w-3.5" />}
             </button>
           </div>
         </div>
@@ -467,7 +500,12 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
                   {!selectedFeedId && item.feedTitle && (
                     <span className="truncate">{item.feedTitle}</span>
                   )}
-                  {item.savedArticleId ? '✓ Saved' : ''}
+                  {item.savedArticleId && (
+                    <span className="flex items-center gap-1">
+                      <Check className="h-3 w-3" />
+                      Saved
+                    </span>
+                  )}
                 </span>
                 <span>{timeAgo(item.publishedAt)}</span>
               </div>
@@ -499,26 +537,38 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
                 onClick={() => handleToggleItemReadFromMenu(item)}
                 className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-indigo-600 hover:text-white"
               >
-                {item.isRead ? '● Mark Unread' : '○ Mark Read'}
+                {item.isRead ? (
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                ) : (
+                  <Circle className="h-3.5 w-3.5" />
+                )}
+                {item.isRead ? 'Mark Unread' : 'Mark Read'}
               </button>
               <button
                 disabled={!!item.savedArticleId}
                 onClick={() => handleSaveItemFromMenu(item)}
                 className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-indigo-600 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-700"
               >
-                {item.savedArticleId ? '✓ Saved' : '📥 Save to Library'}
+                {item.savedArticleId ? (
+                  <Check className="h-3.5 w-3.5" />
+                ) : (
+                  <Download className="h-3.5 w-3.5" />
+                )}
+                {item.savedArticleId ? 'Saved' : 'Save to Library'}
               </button>
               <button
                 onClick={() => handleCopyItemLink(item)}
                 className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-indigo-600 hover:text-white"
               >
-                ⧉ Copy Link
+                <Copy className="h-3.5 w-3.5" />
+                Copy Link
               </button>
               <button
                 onClick={() => handleOpenItemInBrowser(item)}
                 className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-indigo-600 hover:text-white"
               >
-                🔗 Open in Browser
+                <Link className="h-3.5 w-3.5" />
+                Open in Browser
               </button>
             </div>
           )
@@ -535,7 +585,7 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
           <>
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
               <div className="min-w-0">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600">
+                <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
                   {selectedItem.title ?? selectedItem.link}
                 </span>
                 <div className="truncate text-xs text-slate-500 dark:text-slate-400">
@@ -560,13 +610,18 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
                 <button
                   onClick={handleSaveToLibrary}
                   disabled={savingItem || !!selectedItem.savedArticleId}
-                  className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-emerald-500 disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-emerald-500 disabled:opacity-50"
                 >
+                  {selectedItem.savedArticleId ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    !savingItem && <Download className="h-3.5 w-3.5" />
+                  )}
                   {selectedItem.savedArticleId
-                    ? '✓ Saved'
+                    ? 'Saved'
                     : savingItem
                       ? 'Saving…'
-                      : '📥 Save to Library'}
+                      : 'Save to Library'}
                 </button>
               </div>
             </div>
@@ -577,22 +632,22 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
                   <button
                     disabled={!embedState.canGoBack}
                     onClick={() => window.api.embed.back()}
-                    className="rounded px-1.5 py-0.5 text-slate-600 hover:bg-slate-200 disabled:opacity-30 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="inline-flex items-center justify-center rounded px-1.5 py-0.5 text-slate-600 hover:bg-slate-200 disabled:opacity-30 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
-                    ←
+                    <ArrowLeft className="h-3.5 w-3.5" />
                   </button>
                   <button
                     disabled={!embedState.canGoForward}
                     onClick={() => window.api.embed.forward()}
-                    className="rounded px-1.5 py-0.5 text-slate-600 hover:bg-slate-200 disabled:opacity-30 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="inline-flex items-center justify-center rounded px-1.5 py-0.5 text-slate-600 hover:bg-slate-200 disabled:opacity-30 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
-                    →
+                    <ArrowRight className="h-3.5 w-3.5" />
                   </button>
                   <button
                     onClick={() => window.api.embed.reload()}
-                    className="rounded px-1.5 py-0.5 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="inline-flex items-center justify-center rounded px-1.5 py-0.5 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
-                    {embedState.loading ? '…' : '⟳'}
+                    {embedState.loading ? '…' : <RotateCw className="h-3.5 w-3.5" />}
                   </button>
                   <span className="min-w-0 flex-1 truncate text-[11px] text-slate-400">
                     {embedState.url || embedUrl}
@@ -600,16 +655,16 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
                   <button
                     onClick={() => window.api.embed.copyLink()}
                     title="Copy link"
-                    className="rounded px-1.5 py-0.5 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="inline-flex items-center justify-center rounded px-1.5 py-0.5 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
-                    ⧉
+                    <Copy className="h-3.5 w-3.5" />
                   </button>
                   <button
                     onClick={() => void window.api.embed.openInWindow()}
                     title="Open in browser window"
-                    className="rounded px-1.5 py-0.5 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="inline-flex items-center justify-center rounded px-1.5 py-0.5 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
-                    🔗
+                    <Link className="h-3.5 w-3.5" />
                   </button>
                 </div>
                 <div ref={anchorRef} className="min-h-0 flex-1" />

@@ -1,4 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
+import {
+  ArrowLeft,
+  ArrowUp,
+  ArrowDown,
+  ChevronDown,
+  ChevronUp,
+  Highlighter,
+  RotateCw,
+  X
+} from 'lucide-react'
 import type { Article } from '@shared/types'
 import { useAppStore } from '../store/appStore'
 import { HighlightableContent, type HighlightableContentHandle } from './HighlightableContent'
@@ -174,14 +184,15 @@ export function ReaderView({
             onClick={onBack}
             className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-            ← Library
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Library
           </button>
           <button
             onClick={() => retryExtraction(article.id)}
             title="Refresh / Re-extract content"
-            className="rounded-lg px-2 py-1.5 text-xs text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-800"
+            className="inline-flex items-center justify-center rounded-lg px-2 py-1.5 text-xs text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-800"
           >
-            ↻
+            <RotateCw className="h-3.5 w-3.5" />
           </button>
 
           {findOpen ? (
@@ -203,19 +214,19 @@ export function ReaderView({
                 onClick={() => contentRef.current?.findPrev()}
                 className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               >
-                ↑
+                <ChevronUp className="h-3.5 w-3.5" />
               </button>
               <button
                 onClick={() => contentRef.current?.findNext()}
                 className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               >
-                ↓
+                <ChevronDown className="h-3.5 w-3.5" />
               </button>
               <button
                 onClick={closeFind}
                 className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               >
-                ✕
+                <X className="h-3.5 w-3.5" />
               </button>
             </div>
           ) : (
@@ -247,8 +258,9 @@ export function ReaderView({
 
         <div className="flex items-center gap-2">
           {highlights.length > 0 && (
-            <span className="rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
-              🖍️ {highlights.length} {highlights.length === 1 ? 'Highlight' : 'Highlights'}
+            <span className="flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
+              <Highlighter className="h-3.5 w-3.5" />
+              {highlights.length} {highlights.length === 1 ? 'Highlight' : 'Highlights'}
               {highlights.some((h) => h.comment) && (
                 <span className="ml-1 rounded bg-amber-200 px-1 text-[10px] text-amber-800">
                   {highlights.filter((h) => h.comment).length} note
@@ -340,7 +352,7 @@ export function ReaderView({
               title="Scroll to top"
               className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 shadow hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             >
-              ↑
+              <ArrowUp className="h-4 w-4" />
             </button>
           )}
           {progress < 0.98 && (
@@ -349,7 +361,7 @@ export function ReaderView({
               title="Scroll to bottom"
               className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 shadow hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             >
-              ↓
+              <ArrowDown className="h-4 w-4" />
             </button>
           )}
         </div>
