@@ -40,6 +40,12 @@ function isHttpUrl(url: string): boolean {
   }
 }
 
+const FEED_LIST_COLLAPSED_KEY = 'read:feedListCollapsed'
+
+function loadStoredCollapsed(): boolean {
+  return localStorage.getItem(FEED_LIST_COLLAPSED_KEY) === 'true'
+}
+
 export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.Element {
   const {
     feeds,
@@ -60,7 +66,12 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
   } = useFeedStore()
   const { categories, loadCategories } = useAppStore()
 
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsedState] = useState(loadStoredCollapsed)
+
+  function setCollapsed(value: boolean): void {
+    setCollapsedState(value)
+    localStorage.setItem(FEED_LIST_COLLAPSED_KEY, String(value))
+  }
   const [addingFeed, setAddingFeed] = useState(false)
   const [feedUrlDraft, setFeedUrlDraft] = useState('')
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
@@ -238,50 +249,49 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
       {/* Pane 1: feeds list */}
       <aside
         className={`flex flex-shrink-0 flex-col border-r border-slate-200 bg-slate-50 transition-all dark:border-slate-800 dark:bg-slate-950 ${
-          collapsed ? 'w-12' : 'w-64'
+          collapsed ? 'w-10' : 'w-[200px]'
         }`}
       >
-        <div className="flex items-center justify-between border-b border-slate-200 p-3 dark:border-slate-800">
-          {!collapsed && (
+        <div
+          className={`grid grid-cols-[auto_1fr_auto] items-center border-b border-slate-200 dark:border-slate-800 ${
+            collapsed ? 'px-1 py-3' : 'p-3'
+          }`}
+        >
+          {!collapsed ? (
             <button
-              onClick={onBack}
-              className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+              title="Select feeds to delete"
+              onClick={toggleSelectMode}
+              className={`inline-flex items-center justify-center rounded p-1 font-bold hover:bg-slate-200 ${selectMode ? 'text-indigo-600' : 'text-slate-500'}`}
             >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              Library
+              <ListChecks className="h-4 w-4" />
             </button>
+          ) : (
+            <span />
           )}
-          <div className="flex items-center gap-1">
-            {!collapsed && (
-              <>
-                <button
-                  title="Select feeds to delete"
-                  onClick={toggleSelectMode}
-                  className={`inline-flex items-center justify-center rounded p-1 font-bold hover:bg-slate-200 ${selectMode ? 'text-indigo-600' : 'text-slate-500'}`}
-                >
-                  <ListChecks className="h-4 w-4" />
-                </button>
-                <button
-                  title="Add feed"
-                  onClick={() => setAddingFeed(true)}
-                  className="rounded p-1 text-sm font-bold text-slate-500 hover:bg-slate-200"
-                >
-                  +
-                </button>
-              </>
-            )}
+          {!collapsed ? (
             <button
-              title={collapsed ? 'Expand' : 'Collapse'}
-              onClick={() => setCollapsed(!collapsed)}
-              className="inline-flex items-center justify-center rounded p-1 text-slate-500 hover:bg-slate-200"
+              title="Add feed"
+              onClick={() => setAddingFeed(true)}
+              className="justify-self-center rounded p-1 text-sm font-bold text-slate-500 hover:bg-slate-200"
             >
-              {collapsed ? (
-                <ChevronRight className="h-4 w-4" />
-              ) : (
-                <ChevronLeft className="h-4 w-4" />
-              )}
+              +
             </button>
-          </div>
+          ) : (
+            <span />
+          )}
+          <button
+            title={collapsed ? 'Expand' : 'Collapse'}
+            onClick={() => setCollapsed(!collapsed)}
+            className={`inline-flex items-center justify-center rounded text-slate-500 hover:bg-slate-200 ${
+              collapsed ? 'col-span-3 justify-self-center p-0.5' : 'justify-self-end p-1'
+            }`}
+          >
+            {collapsed ? (
+              <ChevronRight className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronLeft className="h-3.5 w-3.5" />
+            )}
+          </button>
         </div>
 
         {!collapsed && (
@@ -451,11 +461,18 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
 
       {/* Pane 2: feed items */}
       <section className="flex w-80 flex-shrink-0 flex-col border-r border-slate-200 dark:border-slate-800">
-        <div className="flex items-center justify-between gap-2 border-b border-slate-200 p-3 dark:border-slate-800">
-          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 border-b border-slate-200 p-3 dark:border-slate-800">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Library
+          </button>
+          <span className="text-center text-xs font-bold text-slate-500 dark:text-slate-400">
             Articles ({feedItems.length})
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 justify-self-end">
             <button
               title="Mark all as read"
               onClick={() => void markAllRead(selectedFeedId ?? undefined)}
@@ -474,7 +491,7 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
             </button>
           </div>
         </div>
-        <div className="flex-1 divide-y divide-slate-100 overflow-y-auto dark:divide-slate-800">
+        <div className="flex-1 divide-y divide-slate-300 overflow-y-auto dark:divide-slate-700">
           {feedItems.length === 0 && (
             <p className="p-4 text-center text-xs text-slate-400">
               {selectedFeed ? 'No articles in this feed yet.' : 'No articles yet.'}
@@ -490,34 +507,53 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
               }}
               className={`block w-full px-3.5 py-2 text-left ${
                 effectiveItemId === item.id
-                  ? 'border-l-2 border-indigo-500 bg-slate-100 dark:bg-slate-800'
+                  ? 'bg-yellow-50 dark:bg-yellow-900/30'
                   : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
               }`}
             >
-              <div className="mb-0.5 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300">
-                <span className="flex items-center gap-1.5">
-                  {!item.isRead && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />}
-                  {!selectedFeedId && item.feedTitle && (
-                    <span className="truncate">{item.feedTitle}</span>
-                  )}
-                  {item.savedArticleId && (
-                    <span className="flex items-center gap-1">
-                      <Check className="h-3 w-3" />
-                      Saved
-                    </span>
-                  )}
-                </span>
-                <span>{timeAgo(item.publishedAt)}</span>
-              </div>
-              <h4
-                className={`text-xs leading-snug ${
-                  item.isRead
-                    ? 'font-normal text-slate-800 dark:text-slate-200'
-                    : 'font-semibold text-black dark:text-white'
-                }`}
-              >
-                {item.title ?? item.link}
-              </h4>
+              {(() => {
+                const hasMeta = (!selectedFeedId && !!item.feedTitle) || !!item.savedArticleId
+                const title = (
+                  <h4
+                    className={`text-sm leading-snug ${
+                      item.isRead
+                        ? 'font-normal text-slate-800 dark:text-slate-200'
+                        : 'font-semibold text-blue-600 dark:text-blue-400'
+                    }`}
+                  >
+                    {item.title ?? item.link}
+                  </h4>
+                )
+                if (!hasMeta) {
+                  return (
+                    <div className="flex items-baseline justify-between gap-2">
+                      {title}
+                      <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
+                        {timeAgo(item.publishedAt)}
+                      </span>
+                    </div>
+                  )
+                }
+                return (
+                  <>
+                    <div className="mb-0.5 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
+                      <span className="flex items-center gap-1.5">
+                        {!selectedFeedId && item.feedTitle && (
+                          <span className="truncate">{item.feedTitle}</span>
+                        )}
+                        {item.savedArticleId && (
+                          <span className="flex items-center gap-1">
+                            <Check className="h-3 w-3" />
+                            Saved
+                          </span>
+                        )}
+                      </span>
+                      <span>{timeAgo(item.publishedAt)}</span>
+                    </div>
+                    {title}
+                  </>
+                )
+              })()}
             </button>
           ))}
         </div>

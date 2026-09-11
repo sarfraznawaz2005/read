@@ -198,8 +198,14 @@ export function listAllFeedItems(): FeedItem[] {
 
 export function getFeedItemById(id: string): FeedItem | null {
   const db = getDb()
-  const row = db.prepare('SELECT * FROM feed_items WHERE id = ?').get(id) as unknown as
-    FeedItemRow | undefined
+  const row = db
+    .prepare(
+      `SELECT fi.*, f.title AS feed_title
+       FROM feed_items fi
+       JOIN feeds f ON f.id = fi.feed_id
+       WHERE fi.id = ?`
+    )
+    .get(id) as unknown as FeedItemRow | undefined
   return row ? rowToFeedItem(row) : null
 }
 
@@ -222,7 +228,7 @@ export function pruneOldFeedItems(maxTotal: number): number {
     .prepare(
       `DELETE FROM feed_items
        WHERE id NOT IN (
-         SELECT id FROM feed_items ORDER BY published_at DESC, fetched_at DESC LIMIT ?
+         SELECT id FROM feed_items ORDER BY is_read ASC, published_at DESC, fetched_at DESC LIMIT ?
        )`
     )
     .run(maxTotal)
