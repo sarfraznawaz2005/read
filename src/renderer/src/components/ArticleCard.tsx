@@ -184,7 +184,7 @@ export function ArticleCard({
 
   return (
     <div
-      className="relative flex flex-col rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800"
+      className="relative flex flex-col rounded-xl border border-slate-200 bg-white shadow-sm transition-colors hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-indigo-500"
       onContextMenu={(event) => {
         event.preventDefault()
         setContextMenu({ x: event.clientX, y: event.clientY })
