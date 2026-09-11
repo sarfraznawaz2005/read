@@ -18,7 +18,7 @@ function loadStoredViewMode(): 'card' | 'list' {
 }
 
 function App(): React.JSX.Element {
-  const { articles, loading, error, loadArticles, loadCategories } = useAppStore()
+  const { articles, loading, toast, clearToast, loadArticles, loadCategories } = useAppStore()
   const { settings, loadSettings } = useSettingsStore()
   const { loadFeeds } = useFeedStore()
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -44,6 +44,12 @@ function App(): React.JSX.Element {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', settings?.theme === 'dark')
   }, [settings?.theme])
+
+  useEffect(() => {
+    if (!toast) return
+    const timer = setTimeout(clearToast, 5000)
+    return () => clearTimeout(timer)
+  }, [toast, clearToast])
 
   // A single delegated handler so any external link anywhere in the React UI
   // (feeds, analytics, library) opens in the in-app browser, matching ReaderView.
@@ -96,9 +102,15 @@ function App(): React.JSX.Element {
       />
       <main className="flex-1 overflow-y-auto p-6">
         <LibraryToolbar viewMode={viewMode} onChangeViewMode={setViewMode} />
-        {error && (
-          <div className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600 dark:bg-rose-900/40 dark:text-rose-300">
-            {error}
+        {toast && (
+          <div
+            className={`fixed left-1/2 top-4 z-50 -translate-x-1/2 rounded-lg px-4 py-2.5 text-xs font-medium shadow-lg ${
+              toast.type === 'success'
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/90 dark:text-emerald-200'
+                : 'bg-rose-50 text-rose-600 dark:bg-rose-900/90 dark:text-rose-200'
+            }`}
+          >
+            {toast.message}
           </div>
         )}
         {loading && articles.length === 0 && (

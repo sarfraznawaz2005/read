@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, Menu } from 'electron'
 import { join } from 'path'
 import windowStateKeeper from 'electron-window-state'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -83,6 +83,18 @@ function createWindow(): void {
     } else {
       win.show()
     }
+  })
+
+  win.webContents.on('context-menu', (_event, params) => {
+    if (!params.isEditable) return
+    const { editFlags } = params
+    Menu.buildFromTemplate([
+      { role: 'cut', enabled: editFlags.canCut },
+      { role: 'copy', enabled: editFlags.canCopy },
+      { role: 'paste', enabled: editFlags.canPaste },
+      { type: 'separator' },
+      { role: 'selectAll', enabled: editFlags.canSelectAll }
+    ]).popup({ window: win })
   })
 
   win.on('minimize', () => {

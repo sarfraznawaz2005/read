@@ -10,17 +10,23 @@ import type {
   TextQuoteAnchor
 } from '@shared/types'
 
+export interface Toast {
+  type: 'success' | 'error'
+  message: string
+}
+
 interface AppState {
   categories: Category[]
   articles: Article[]
   filter: ArticleListFilter
   loading: boolean
   addingArticle: boolean
-  error: string | null
+  toast: Toast | null
   highlights: Highlight[]
   loadCategories: () => Promise<void>
   loadArticles: () => Promise<void>
   setFilter: (filter: ArticleListFilter) => void
+  clearToast: () => void
   createCategory: (name: string) => Promise<void>
   renameCategory: (id: string, name: string) => Promise<void>
   deleteCategory: (id: string) => Promise<void>
@@ -48,7 +54,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   filter: { status: 'all' },
   loading: false,
   addingArticle: false,
-  error: null,
+  toast: null,
   highlights: [],
 
   loadCategories: async () => {
@@ -57,14 +63,14 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   loadArticles: async () => {
-    set({ loading: true, error: null })
+    set({ loading: true })
     try {
       const articles = await window.api.articles.list(get().filter)
       set({ articles, loading: false })
     } catch (error) {
       set({
         loading: false,
-        error: toErrorMessage(error, 'Failed to load articles')
+        toast: { type: 'error', message: toErrorMessage(error, 'Failed to load articles') }
       })
     }
   },
@@ -73,6 +79,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ filter })
     void get().loadArticles()
   },
+
+  clearToast: () => set({ toast: null }),
 
   createCategory: async (name) => {
     await window.api.categories.create(name)
@@ -95,13 +103,14 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   addArticle: async (url, categoryId) => {
-    set({ addingArticle: true, error: null })
+    set({ addingArticle: true })
     try {
       await window.api.articles.add(url, categoryId)
       await get().loadArticles()
+      set({ toast: { type: 'success', message: 'Article saved.' } })
     } catch (error) {
       const message = toErrorMessage(error, 'Failed to save article')
-      set({ error: message })
+      set({ toast: { type: 'error', message } })
       throw new Error(message)
     } finally {
       set({ addingArticle: false })
