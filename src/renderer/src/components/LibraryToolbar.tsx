@@ -32,7 +32,7 @@ export function LibraryToolbar({
   }, [query])
 
   return (
-    <div className="mb-4 flex items-center justify-between gap-3">
+    <div className="mb-4 flex items-center gap-3">
       <div className="relative max-w-md flex-1">
         <input
           type="text"
@@ -56,7 +56,7 @@ export function LibraryToolbar({
           ))}
         </select>
       </div>
-      <div className="flex items-center gap-0.5 rounded-lg border border-slate-300 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-800">
+      <div className="ml-auto flex items-center gap-0.5 rounded-lg border border-slate-300 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-800">
         <button
           title="Card view"
           onClick={() => onChangeViewMode('card')}

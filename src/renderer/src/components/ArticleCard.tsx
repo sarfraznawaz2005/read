@@ -93,7 +93,7 @@ export function ArticleCard({
   if (view === 'list') {
     return (
       <div
-        className="relative flex items-center gap-4 rounded-lg border border-slate-200 bg-white px-4 py-2.5 shadow-sm transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+        className="relative flex items-center gap-4 rounded-lg border border-slate-200 bg-white px-4 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800"
         onContextMenu={(event) => {
           event.preventDefault()
           setContextMenu({ x: event.clientX, y: event.clientY })
@@ -114,39 +114,47 @@ export function ArticleCard({
               <span className="flex-shrink-0 text-[10px] text-rose-500">Failed</span>
             )}
           </div>
-          <p className="truncate text-[11px] text-slate-400">
+          <p className="truncate text-xs text-slate-700 dark:text-slate-400">
             {article.sourceDomain}
             {article.author && ` • ${article.author}`}
           </p>
         </div>
-        <div className="flex flex-shrink-0 items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex flex-shrink-0 items-center gap-3 text-xs text-slate-800 dark:text-slate-400">
           <button
             onClick={() => updateStatus(article.id, { isRead: !article.isRead })}
-            className={article.isRead ? 'font-medium text-emerald-600' : 'hover:text-slate-800'}
+            className={
+              article.isRead
+                ? 'cursor-pointer font-medium text-emerald-600'
+                : 'cursor-pointer hover:text-indigo-600'
+            }
           >
             {article.isRead ? 'Read' : 'Mark read'}
           </button>
           <button
             onClick={() => updateStatus(article.id, { isFavorite: !article.isFavorite })}
-            className={article.isFavorite ? 'font-medium text-amber-500' : 'hover:text-slate-800'}
+            className={
+              article.isFavorite
+                ? 'cursor-pointer font-medium text-amber-500'
+                : 'cursor-pointer hover:text-indigo-600'
+            }
           >
-            ★
+            ★ Favorite
           </button>
           <button
             onClick={() => updateStatus(article.id, { isArchived: !article.isArchived })}
-            className="hover:text-slate-800"
+            className="cursor-pointer hover:text-indigo-600"
           >
             {article.isArchived ? 'Unarchive' : 'Archive'}
           </button>
           {article.extractionStatus === 'failed' && (
             <button
               onClick={() => retryExtraction(article.id)}
-              className="font-medium text-indigo-600 hover:text-indigo-800"
+              className="cursor-pointer font-medium text-indigo-600 hover:text-indigo-800"
             >
               Retry
             </button>
           )}
-          <button onClick={handleDelete} className="text-rose-500 hover:text-rose-700">
+          <button onClick={handleDelete} className="cursor-pointer text-rose-500 hover:text-rose-700">
             Delete
           </button>
         </div>
@@ -158,7 +166,7 @@ export function ArticleCard({
 
   return (
     <div
-      className="relative flex flex-col rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+      className="relative flex flex-col rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800"
       onContextMenu={(event) => {
         event.preventDefault()
         setContextMenu({ x: event.clientX, y: event.clientY })
@@ -168,42 +176,54 @@ export function ArticleCard({
         className={`flex-1 p-4 ${canOpen ? 'cursor-pointer' : ''}`}
         onClick={() => canOpen && onOpen(article.id)}
       >
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-[10px] text-slate-400">{article.sourceDomain}</span>
-          {article.extractionStatus === 'pending' && (
-            <span className="text-[10px] text-indigo-500">Saving…</span>
-          )}
-          {article.extractionStatus === 'failed' && (
-            <span className="text-[10px] text-rose-500">Failed</span>
-          )}
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <span className="text-xs text-slate-700">{article.sourceDomain}</span>
+          <div className="flex items-center gap-2">
+            {article.extractionStatus === 'pending' && (
+              <span className="text-[10px] text-indigo-500">Saving…</span>
+            )}
+            {article.extractionStatus === 'failed' && (
+              <span className="text-[10px] text-rose-500">Failed</span>
+            )}
+            {article.author && (
+              <span className="text-xs text-slate-800 dark:text-slate-400">
+                {article.author}
+              </span>
+            )}
+          </div>
         </div>
         <h4 className="line-clamp-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
           {article.title ?? article.url}
         </h4>
-        {article.author && (
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{article.author}</p>
-        )}
         {article.extractionStatus === 'failed' && article.extractionError && (
           <p className="mt-2 text-xs text-rose-500">{article.extractionError}</p>
         )}
       </div>
-      <div className="flex items-center justify-between border-t border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+      <div className="flex items-center justify-between border-t border-slate-100 px-4 py-2 text-xs text-slate-800 dark:border-slate-700 dark:text-slate-400">
         <div className="flex gap-3">
           <button
             onClick={() => updateStatus(article.id, { isRead: !article.isRead })}
-            className={article.isRead ? 'font-medium text-emerald-600' : 'hover:text-slate-800'}
+            className={
+              article.isRead
+                ? 'cursor-pointer font-medium text-emerald-600'
+                : 'cursor-pointer hover:text-indigo-600'
+            }
           >
             {article.isRead ? 'Read' : 'Mark read'}
           </button>
           <button
             onClick={() => updateStatus(article.id, { isFavorite: !article.isFavorite })}
-            className={article.isFavorite ? 'font-medium text-amber-500' : 'hover:text-slate-800'}
+            className={
+              article.isFavorite
+                ? 'cursor-pointer font-medium text-amber-500'
+                : 'cursor-pointer hover:text-indigo-600'
+            }
           >
             ★ Favorite
           </button>
           <button
             onClick={() => updateStatus(article.id, { isArchived: !article.isArchived })}
-            className="hover:text-slate-800"
+            className="cursor-pointer hover:text-indigo-600"
           >
             {article.isArchived ? 'Unarchive' : 'Archive'}
           </button>
@@ -212,12 +232,12 @@ export function ArticleCard({
           {article.extractionStatus === 'failed' && (
             <button
               onClick={() => retryExtraction(article.id)}
-              className="font-medium text-indigo-600 hover:text-indigo-800"
+              className="cursor-pointer font-medium text-indigo-600 hover:text-indigo-800"
             >
               Retry
             </button>
           )}
-          <button onClick={handleDelete} className="text-rose-500 hover:text-rose-700">
+          <button onClick={handleDelete} className="cursor-pointer text-rose-500 hover:text-rose-700">
             Delete
           </button>
         </div>
