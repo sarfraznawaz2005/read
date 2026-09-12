@@ -122,7 +122,8 @@ const api = {
     get: (): Promise<Analytics> => ipcRenderer.invoke('analytics:get')
   },
   browser: {
-    open: (url: string): Promise<void> => ipcRenderer.invoke('browser:open', url)
+    open: (url: string): Promise<void> => ipcRenderer.invoke('browser:open', url),
+    openExternal: (url: string): Promise<void> => ipcRenderer.invoke('browser:openExternal', url)
   }
 }
 

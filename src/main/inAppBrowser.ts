@@ -158,6 +158,9 @@ export function createBrowserHandlers(
   getParent: () => BrowserWindow | null
 ): Record<string, (event: unknown, url: string) => void> {
   return {
-    'browser:open': (_event: unknown, url: string): void => openInAppBrowser(url, getParent())
+    'browser:open': (_event: unknown, url: string): void => openInAppBrowser(url, getParent()),
+    'browser:openExternal': (_event: unknown, url: string): void => {
+      if (isHttpUrl(url)) void shell.openExternal(url)
+    }
   }
 }
