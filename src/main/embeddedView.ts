@@ -13,6 +13,13 @@ interface EmbedBounds {
 let view: WebContentsView | null = null
 let ownerWindow: BrowserWindow | null = null
 
+// `view.webContents` can go undefined even while `view` itself is still set
+// (the native side can tear it down without clearing our reference), so every
+// liveness check must go through this instead of checking `view` alone.
+function isViewAlive(v: WebContentsView | null): v is WebContentsView {
+  return !!v && !!v.webContents && !v.webContents.isDestroyed()
+}
+
 function isHttpUrl(url: string): boolean {
   try {
     const parsed = new URL(url)
@@ -23,7 +30,7 @@ function isHttpUrl(url: string): boolean {
 }
 
 function sendState(win: BrowserWindow): void {
-  if (!view || view.webContents.isDestroyed()) return
+  if (!isViewAlive(view)) return
   const wc = view.webContents
   const state: BrowserChromeState = {
     url: wc.getURL(),
@@ -36,7 +43,7 @@ function sendState(win: BrowserWindow): void {
 }
 
 function ensureView(win: BrowserWindow): WebContentsView {
-  if (view && !view.webContents.isDestroyed()) return view
+  if (isViewAlive(view)) return view
 
   const newView = new WebContentsView({
     webPreferences: {
@@ -119,7 +126,7 @@ export function destroyEmbedded(): void {
     }
     // WebContentsView is not auto-destroyed when detached - without this the
     // embedded page keeps running (and can keep playing audio) in the background.
-    if (!view.webContents.isDestroyed()) view.webContents.close()
+    if (isViewAlive(view)) view.webContents.close()
   }
   view = null
   ownerWindow = null
@@ -143,7 +150,7 @@ export function createEmbeddedHandlers(
     'embed:destroy': (): void => destroyEmbedded(),
     'embed:openInWindow': (): void => {
       const win = getWin()
-      if (!win || !view || view.webContents.isDestroyed()) return
+      if (!win || !isViewAlive(view)) return
       openInAppBrowser(view.webContents.getURL(), win)
     }
   }
@@ -152,7 +159,7 @@ export function createEmbeddedHandlers(
 export function registerEmbeddedViewHandlers(getWin: () => BrowserWindow | null): void {
   function activeView(event: IpcMainEvent): WebContentsView | null {
     if (!isFromOwner(event, getWin)) return null
-    return view && !view.webContents.isDestroyed() ? view : null
+    return isViewAlive(view) ? view : null
   }
 
   ipcMain.on('embed:setBounds', (event, bounds: EmbedBounds) => {
@@ -168,7 +175,7 @@ export function registerEmbeddedViewHandlers(getWin: () => BrowserWindow | null)
 
   ipcMain.on('embed:setVisible', (event, visible: boolean) => {
     const win = getWin()
-    if (!isFromOwner(event, getWin) || !win || !view || view.webContents.isDestroyed()) return
+    if (!isFromOwner(event, getWin) || !win || !isViewAlive(view)) return
     if (visible) win.contentView.addChildView(view)
     else win.contentView.removeChildView(view)
   })

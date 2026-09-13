@@ -34,6 +34,14 @@ function isHttpUrl(url: string): boolean {
 
 app.setName('read-app')
 
+// Without this, any unexpected error in the main process pops Electron's native
+// crash dialog. Renderer IPC calls keep firing while it's up, each one re-throwing
+// and respawning the dialog - the app becomes unclosable and the tray stops
+// responding. Logging instead keeps the app alive and closable no matter what breaks.
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception in main process:', error)
+})
+
 let mainWindow: BrowserWindow | null = null
 
 function createWindow(): void {
