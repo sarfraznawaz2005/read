@@ -144,12 +144,12 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
   }, [selectedItem?.id])
 
   const embedUrl = selectedItem && isHttpUrl(selectedItem.link) ? selectedItem.link : null
-  const { anchorRef, state: embedState } = useEmbeddedPage(embedUrl)
+  const { anchorRef, state: embedState, setVisible: setEmbedVisible } = useEmbeddedPage(embedUrl)
 
   function confirmBlocking(message: string): boolean {
-    window.api.embed.setVisible(false)
+    setEmbedVisible(false)
     const result = window.confirm(message)
-    if (embedUrl) window.api.embed.setVisible(true)
+    if (embedUrl) setEmbedVisible(true)
     return result
   }
 
@@ -683,10 +683,15 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
                     onClick={() => window.api.embed.reload()}
                     className="inline-flex items-center justify-center rounded px-1.5 py-0.5 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
-                    {embedState.loading ? '…' : <RotateCw className="h-3.5 w-3.5" />}
+                    <RotateCw className="h-3.5 w-3.5" />
                   </button>
-                  <span className="min-w-0 flex-1 truncate text-[11px] text-slate-400">
-                    {embedState.url || embedUrl}
+                  <span className="flex min-w-0 flex-1 items-center gap-1.5 truncate text-[11px] text-slate-400">
+                    {embedState.loading && (
+                      <span className="h-2.5 w-2.5 flex-shrink-0 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-500 dark:border-slate-600 dark:border-t-indigo-400" />
+                    )}
+                    <span className="truncate">
+                      {embedState.loading ? 'Loading…' : embedState.url || embedUrl}
+                    </span>
                   </span>
                   <button
                     onClick={() => window.api.embed.copyLink()}
@@ -703,7 +708,15 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
                     <Link className="h-3.5 w-3.5" />
                   </button>
                 </div>
-                <div ref={anchorRef} className="min-h-0 flex-1" />
+                <div className="relative min-h-0 flex-1">
+                  <div ref={anchorRef} className="absolute inset-0" />
+                  {embedState.loading && (
+                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white dark:bg-slate-900">
+                      <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-slate-200 border-t-indigo-500 dark:border-slate-700 dark:border-t-indigo-400" />
+                      <span className="text-xs text-slate-400">Loading…</span>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               <p className="flex-1 p-8 text-center text-sm text-slate-400">

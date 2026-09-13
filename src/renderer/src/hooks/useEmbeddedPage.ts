@@ -21,7 +21,12 @@ export function useEmbeddedPage(url: string | null): {
 } {
   const anchorRef = useRef<HTMLDivElement>(null)
   const [state, setState] = useState<BrowserChromeState>(EMPTY_STATE)
-  const visibleRef = useRef(true)
+  const stateRef = useRef(state)
+  stateRef.current = state
+  // Whether a caller (e.g. to clear the way for a native confirm() dialog)
+  // wants the view shown, independent of whether the page is still loading.
+  const externalVisibleRef = useRef(true)
+  const shownRef = useRef(true)
 
   // Reset the displayed state the instant `url` changes (during render, not an
   // effect) so the toolbar never shows the previous page's URL while the new
@@ -36,7 +41,7 @@ export function useEmbeddedPage(url: string | null): {
 
   const syncBounds = useCallback((): void => {
     const el = anchorRef.current
-    if (!el || !visibleRef.current) return
+    if (!el || !shownRef.current) return
     const rect = el.getBoundingClientRect()
     // No client-side dedupe here: the very first call can race the native
     // view's creation in the main process and be silently dropped there, so
@@ -50,18 +55,31 @@ export function useEmbeddedPage(url: string | null): {
     })
   }, [])
 
+  // The native view is kept hidden while the page is loading, so the pane can
+  // show a React spinner in its place instead of either a blank view or the
+  // previous article's stale content bleeding through until the new one paints.
+  const applyVisibility = useCallback((): void => {
+    const shouldShow = externalVisibleRef.current && !stateRef.current.loading
+    shownRef.current = shouldShow
+    window.api.embed.setVisible(shouldShow)
+    if (shouldShow) syncBounds()
+  }, [syncBounds])
+
   const setVisible = useCallback(
     (visible: boolean): void => {
-      visibleRef.current = visible
-      window.api.embed.setVisible(visible)
-      if (visible) syncBounds()
+      externalVisibleRef.current = visible
+      applyVisibility()
     },
-    [syncBounds]
+    [applyVisibility]
   )
 
   useLayoutEffect(() => {
     syncBounds()
   })
+
+  useEffect(() => {
+    applyVisibility()
+  }, [state.loading, applyVisibility])
 
   useEffect(() => {
     const el = anchorRef.current
@@ -96,8 +114,8 @@ export function useEmbeddedPage(url: string | null): {
       setVisible(false)
       return
     }
-    syncBounds()
-    setVisible(true)
+    externalVisibleRef.current = true
+    applyVisibility()
     void window.api.embed.show(url)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url])
