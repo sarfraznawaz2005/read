@@ -42,6 +42,15 @@ function App(): React.JSX.Element {
   }, [])
 
   useEffect(() => {
+    return window.api.app.onOpenFeedsRequested(() => {
+      setSettingsOpen(false)
+      setAnalyticsOpen(false)
+      setOpenArticleId(null)
+      setFeedsOpen(true)
+    })
+  }, [])
+
+  useEffect(() => {
     document.documentElement.classList.toggle('dark', settings?.theme === 'dark')
   }, [settings?.theme])
 

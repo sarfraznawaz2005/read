@@ -4,8 +4,8 @@ import type { Feed, FeedItem } from '@shared/types'
 
 const FEED_SELECT = `
   SELECT f.*,
-    (SELECT COUNT(*) FROM feed_items fi WHERE fi.feed_id = f.id) AS item_count,
-    (SELECT COUNT(*) FROM feed_items fi WHERE fi.feed_id = f.id AND fi.is_read = 0) AS unread_count
+    (SELECT COUNT(*) FROM feed_items fi WHERE fi.feed_id = f.id AND fi.is_pruned = 0) AS item_count,
+    (SELECT COUNT(*) FROM feed_items fi WHERE fi.feed_id = f.id AND fi.is_pruned = 0 AND fi.is_read = 0) AS unread_count
   FROM feeds f
 `
 
@@ -175,7 +175,9 @@ const ITEM_ORDER_BY = 'is_read ASC, published_at DESC, fetched_at DESC'
 export function listFeedItems(feedId: string): FeedItem[] {
   const db = getDb()
   const rows = db
-    .prepare(`SELECT * FROM feed_items WHERE feed_id = ? ORDER BY ${ITEM_ORDER_BY}`)
+    .prepare(
+      `SELECT * FROM feed_items WHERE feed_id = ? AND is_pruned = 0 ORDER BY ${ITEM_ORDER_BY}`
+    )
     .all(feedId) as unknown as FeedItemRow[]
   return rows.map(rowToFeedItem)
 }
@@ -189,6 +191,7 @@ export function listAllFeedItems(): FeedItem[] {
       `SELECT fi.*, f.title AS feed_title
        FROM feed_items fi
        JOIN feeds f ON f.id = fi.feed_id
+       WHERE fi.is_pruned = 0
        ORDER BY ${ITEM_ORDER_BY}
        LIMIT ${ALL_ITEMS_LIMIT}`
     )
@@ -222,16 +225,54 @@ export function markFeedItemRead(feedItemId: string): FeedItem {
   return getFeedItemById(feedItemId)!
 }
 
+// Soft-deletes items beyond the cap instead of hard-deleting them. A hard delete would let
+// upsertFeedItems' ON CONFLICT(feed_id, link) DO NOTHING re-insert the same link as unread the
+// next time the source feed serves it (most feeds keep re-serving their last N items regardless
+// of read state), silently resurrecting items the user already read.
 export function pruneOldFeedItems(maxTotal: number): number {
   const db = getDb()
   const result = db
     .prepare(
-      `DELETE FROM feed_items
-       WHERE id NOT IN (
-         SELECT id FROM feed_items ORDER BY is_read ASC, published_at DESC, fetched_at DESC LIMIT ?
-       )`
+      `UPDATE feed_items
+       SET is_pruned = 1, title = NULL, summary = NULL
+       WHERE is_pruned = 0
+         AND id NOT IN (
+           SELECT id FROM feed_items
+           WHERE is_pruned = 0
+           ORDER BY is_read ASC, published_at DESC, fetched_at DESC LIMIT ?
+         )`
     )
     .run(maxTotal)
+  return Number(result.changes)
+}
+
+// Only expires already-read items, and soft-prunes (see pruneOldFeedItems) rather than
+// hard-deleting, so an unread item is never lost to age and a re-served old link can't be
+// resurrected as unread once its read tombstone has expired.
+export function pruneExpiredFeedItems(maxAgeDays: number): number {
+  const db = getDb()
+  const cutoff = Date.now() - maxAgeDays * 24 * 60 * 60 * 1000
+  const rows = db
+    .prepare(
+      `SELECT id, published_at, fetched_at FROM feed_items WHERE is_pruned = 0 AND is_read = 1`
+    )
+    .all() as { id: string; published_at: string | null; fetched_at: string }[]
+
+  const expiredIds = rows
+    .filter((row) => {
+      const time = new Date(row.published_at ?? row.fetched_at).getTime()
+      return !Number.isNaN(time) && time < cutoff
+    })
+    .map((row) => row.id)
+
+  if (expiredIds.length === 0) return 0
+
+  const placeholders = expiredIds.map(() => '?').join(', ')
+  const result = db
+    .prepare(
+      `UPDATE feed_items SET is_pruned = 1, title = NULL, summary = NULL WHERE id IN (${placeholders})`
+    )
+    .run(...expiredIds)
   return Number(result.changes)
 }
 
@@ -243,7 +284,9 @@ export function markFeedItemUnread(feedItemId: string): FeedItem {
 
 export function getTotalUnreadCount(): number {
   const db = getDb()
-  const row = db.prepare('SELECT COUNT(*) AS count FROM feed_items WHERE is_read = 0').get() as {
+  const row = db
+    .prepare('SELECT COUNT(*) AS count FROM feed_items WHERE is_read = 0 AND is_pruned = 0')
+    .get() as {
     count: number
   }
   return row.count

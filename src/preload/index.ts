@@ -124,6 +124,13 @@ const api = {
   browser: {
     open: (url: string): Promise<void> => ipcRenderer.invoke('browser:open', url),
     openExternal: (url: string): Promise<void> => ipcRenderer.invoke('browser:openExternal', url)
+  },
+  app: {
+    onOpenFeedsRequested: (callback: () => void): (() => void) => {
+      const listener = (): void => callback()
+      ipcRenderer.on('app:openFeeds', listener)
+      return () => ipcRenderer.off('app:openFeeds', listener)
+    }
   }
 }
 

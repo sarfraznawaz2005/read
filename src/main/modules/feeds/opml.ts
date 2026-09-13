@@ -2,6 +2,7 @@ import { dialog } from 'electron'
 import { readFile, writeFile } from 'fs/promises'
 import { XMLBuilder, XMLParser } from 'fast-xml-parser'
 import { showDesktopNotification } from '../../notifications'
+import { getMainWindow } from '../../windowRegistry'
 import { getFeedByUrl, insertFeed, listFeeds } from './repository'
 
 interface OpmlOutline {
@@ -53,7 +54,10 @@ export async function importOpml(): Promise<{ added: number; skipped: number } |
 
   showDesktopNotification(
     'OPML import complete',
-    `Imported ${added} feed${added === 1 ? '' : 's'}, skipped ${skipped}`
+    `Imported ${added} feed${added === 1 ? '' : 's'}, skipped ${skipped}`,
+    () => {
+      getMainWindow()?.webContents.send('app:openFeeds')
+    }
   )
 
   return { added, skipped }

@@ -9,6 +9,7 @@ import {
   listFeeds,
   markFeedFailed,
   markFeedOk,
+  pruneExpiredFeedItems,
   pruneOldFeedItems,
   upsertFeedItems,
   type IncomingFeedItem
@@ -66,7 +67,9 @@ function notifyScanResult(result: FeedScanResult, trigger: 'manual' | 'auto'): v
     parts.push(`${result.feedsFailed} feed${result.feedsFailed === 1 ? '' : 's'} failed`)
   }
 
-  showDesktopNotification('Feed scan complete', parts.join(' • '))
+  showDesktopNotification('Feed scan complete', parts.join(' • '), () => {
+    getMainWindow()?.webContents.send('app:openFeeds')
+  })
 }
 
 async function runScan(trigger: 'manual' | 'auto'): Promise<FeedScanResult> {
@@ -84,6 +87,9 @@ async function runScan(trigger: 'manual' | 'auto'): Promise<FeedScanResult> {
 
   const maxTotalEntries = getSettings().feedMaxTotalEntries
   if (maxTotalEntries > 0) pruneOldFeedItems(maxTotalEntries)
+
+  const maxAgeDays = getSettings().feedMaxAgeDays
+  if (maxAgeDays > 0) pruneExpiredFeedItems(maxAgeDays)
 
   const result: FeedScanResult = { newItems, feedsScanned: feeds.length, feedsFailed }
   notifyScanResult(result, trigger)
