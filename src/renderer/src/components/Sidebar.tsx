@@ -1,5 +1,5 @@
 import { useState, type KeyboardEvent } from 'react'
-import { BarChart3, Pencil, Rss, Settings, X } from 'lucide-react'
+import { Pencil, Rss, X } from 'lucide-react'
 import type { ArticleStatusFilter, Category } from '@shared/types'
 import { useAppStore } from '../store/appStore'
 import { useFeedStore } from '../store/feedStore'
@@ -228,17 +228,15 @@ export function Sidebar({
       <div className="flex items-center gap-1 border-t border-slate-200 px-3 py-1.5 dark:border-slate-800">
         <button
           onClick={onOpenSettings}
-          className="flex flex-1 cursor-pointer items-center gap-2 py-1.5 text-left text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="flex flex-1 cursor-pointer items-center py-1.5 text-left text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
-          <Settings className="h-3.5 w-3.5" />
           <span>Settings</span>
         </button>
         <button
           onClick={onOpenAnalytics}
-          className="flex flex-1 cursor-pointer items-center justify-end gap-2 py-1.5 text-right text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="flex flex-1 cursor-pointer items-center justify-end py-1.5 text-right text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <span>Analytics</span>
-          <BarChart3 className="h-3.5 w-3.5" />
         </button>
       </div>
     </aside>
