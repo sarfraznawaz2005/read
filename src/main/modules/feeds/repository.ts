@@ -241,6 +241,14 @@ export function markFeedItemUnread(feedItemId: string): FeedItem {
   return getFeedItemById(feedItemId)!
 }
 
+export function getTotalUnreadCount(): number {
+  const db = getDb()
+  const row = db.prepare('SELECT COUNT(*) AS count FROM feed_items WHERE is_read = 0').get() as {
+    count: number
+  }
+  return row.count
+}
+
 export function markAllFeedItemsRead(feedId?: string): void {
   const db = getDb()
   if (feedId) {

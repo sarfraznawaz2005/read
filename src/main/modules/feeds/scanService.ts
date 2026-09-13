@@ -1,5 +1,6 @@
 import type { FeedScanResult } from '@shared/types'
 import { showDesktopNotification } from '../../notifications'
+import { refreshTrayUnreadState } from '../../tray'
 import { getMainWindow } from '../../windowRegistry'
 import { getSettings } from '../settings/repository'
 import { fetchFeed } from './fetch'
@@ -86,6 +87,7 @@ async function runScan(trigger: 'manual' | 'auto'): Promise<FeedScanResult> {
 
   const result: FeedScanResult = { newItems, feedsScanned: feeds.length, feedsFailed }
   notifyScanResult(result, trigger)
+  refreshTrayUnreadState()
   getMainWindow()?.webContents.send('feeds:scanFinished', result)
   return result
 }

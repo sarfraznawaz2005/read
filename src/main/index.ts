@@ -14,7 +14,7 @@ import { settingsHandlers } from './modules/settings/handlers'
 import { analyticsHandlers } from './modules/analytics/handlers'
 import { getSettings } from './modules/settings/repository'
 import { performBackup } from './modules/settings/backupService'
-import { ensureTray } from './tray'
+import { ensureTray, refreshTrayUnreadState } from './tray'
 import { createBrowserHandlers, openInAppBrowser } from './inAppBrowser'
 import {
   createEmbeddedHandlers,
@@ -80,6 +80,7 @@ function createWindow(): void {
   win.on('ready-to-show', () => {
     if (startMinimized) {
       ensureTray(win)
+      refreshTrayUnreadState()
     } else {
       win.show()
     }
@@ -101,6 +102,7 @@ function createWindow(): void {
     if (getSettings().minimizeToTray) {
       win.hide()
       ensureTray(win)
+      refreshTrayUnreadState()
     }
   })
 
@@ -109,6 +111,7 @@ function createWindow(): void {
       event.preventDefault()
       win.hide()
       ensureTray(win)
+      refreshTrayUnreadState()
     }
   })
 

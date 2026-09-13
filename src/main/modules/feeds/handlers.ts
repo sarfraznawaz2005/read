@@ -1,6 +1,7 @@
 import { runExtraction } from '../articles/handlers'
 import { insertPendingArticle } from '../articles/repository'
 import { getDefaultCategoryId } from '../categories/repository'
+import { refreshTrayUnreadState } from '../../tray'
 import { fetchFeed } from './fetch'
 import { exportOpml, importOpml } from './opml'
 import { applyFeedLimits, refreshFeedById, scanAllFeeds } from './scanService'
@@ -30,21 +31,40 @@ export const feedHandlers = {
     const fetched = await fetchFeed(feedUrl)
     const feed = insertFeed(fetched.title, feedUrl, fetched.siteUrl)
     upsertFeedItems(feed.id, applyFeedLimits(fetched.items))
+    refreshTrayUnreadState()
     return getFeedById(feed.id)!
   },
   'feed:list': (): Feed[] => listFeeds(),
   'feed:listItems': (_event: unknown, feedId: string): FeedItem[] => listFeedItems(feedId),
   'feed:listAllItems': (): FeedItem[] => listAllFeedItems(),
-  'feed:markItemRead': (_event: unknown, feedItemId: string): FeedItem =>
-    markFeedItemRead(feedItemId),
-  'feed:markItemUnread': (_event: unknown, feedItemId: string): FeedItem =>
-    markFeedItemUnread(feedItemId),
-  'feed:markAllRead': (_event: unknown, feedId?: string): void => markAllFeedItemsRead(feedId),
-  'feed:refresh': async (_event: unknown, feedId: string): Promise<number> =>
-    refreshFeedById(feedId),
+  'feed:markItemRead': (_event: unknown, feedItemId: string): FeedItem => {
+    const item = markFeedItemRead(feedItemId)
+    refreshTrayUnreadState()
+    return item
+  },
+  'feed:markItemUnread': (_event: unknown, feedItemId: string): FeedItem => {
+    const item = markFeedItemUnread(feedItemId)
+    refreshTrayUnreadState()
+    return item
+  },
+  'feed:markAllRead': (_event: unknown, feedId?: string): void => {
+    markAllFeedItemsRead(feedId)
+    refreshTrayUnreadState()
+  },
+  'feed:refresh': async (_event: unknown, feedId: string): Promise<number> => {
+    const inserted = await refreshFeedById(feedId)
+    refreshTrayUnreadState()
+    return inserted
+  },
   'feed:refreshAll': async (): Promise<FeedScanResult> => scanAllFeeds('manual'),
-  'feed:delete': (_event: unknown, feedId: string): void => deleteFeed(feedId),
-  'feed:deleteMany': (_event: unknown, feedIds: string[]): void => deleteFeeds(feedIds),
+  'feed:delete': (_event: unknown, feedId: string): void => {
+    deleteFeed(feedId)
+    refreshTrayUnreadState()
+  },
+  'feed:deleteMany': (_event: unknown, feedIds: string[]): void => {
+    deleteFeeds(feedIds)
+    refreshTrayUnreadState()
+  },
   'feed:rename': (_event: unknown, feedId: string, title: string): Feed =>
     renameFeed(feedId, title),
   'feed:saveItemToLibrary': async (
