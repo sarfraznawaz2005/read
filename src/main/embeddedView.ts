@@ -59,10 +59,19 @@ function ensureView(win: BrowserWindow): WebContentsView {
 
   const wc = newView.webContents
 
-  // Links (e.g. target="_blank") navigate this same embedded view instead of
-  // spawning a new window; anything non-http(s) is dropped.
-  wc.setWindowOpenHandler(({ url }) => {
-    if (isHttpUrl(url)) void wc.loadURL(url)
+  // Plain target="_blank" links navigate this same embedded view instead of
+  // spawning a new window; anything non-http(s) is dropped. But window.open()
+  // calls with explicit popup features - the pattern "Sign in with Google" and
+  // other OAuth flows use - report as disposition 'new-window' rather than
+  // 'foreground-tab'. Those need a real child window: squashing them into this
+  // view would navigate away from the page that holds the PKCE verifier /
+  // window.opener link the flow relies on, breaking login.
+  wc.setWindowOpenHandler(({ url, disposition }) => {
+    if (!isHttpUrl(url)) return { action: 'deny' }
+    if (disposition === 'new-window') {
+      return { action: 'allow', overrideBrowserWindowOptions: { autoHideMenuBar: true } }
+    }
+    void wc.loadURL(url)
     return { action: 'deny' }
   })
   wc.on('will-navigate', (event, url) => {

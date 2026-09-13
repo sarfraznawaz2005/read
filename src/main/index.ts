@@ -22,6 +22,7 @@ import {
   registerEmbeddedViewHandlers
 } from './embeddedView'
 import { setMainWindow } from './windowRegistry'
+import { DESKTOP_USER_AGENT } from './userAgent'
 
 function isHttpUrl(url: string): boolean {
   try {
@@ -33,6 +34,12 @@ function isHttpUrl(url: string): boolean {
 }
 
 app.setName('read-app')
+
+// Applies to every window/view that doesn't set its own UA (main window,
+// embedded feed pane, popped-out in-app browser) - stops "Electron/x.y.z"
+// from showing up in what sites see and getting flagged as a bot/automation
+// client.
+app.userAgentFallback = DESKTOP_USER_AGENT
 
 // Without this, any unexpected error in the main process pops Electron's native
 // crash dialog. Renderer IPC calls keep firing while it's up, each one re-throwing

@@ -2,6 +2,7 @@ import { JSDOM } from 'jsdom'
 import { Readability } from '@mozilla/readability'
 import createDOMPurify from 'dompurify'
 import hljs from 'highlight.js'
+import { DESKTOP_USER_AGENT } from '../userAgent'
 
 const purifyWindow = new JSDOM('').window
 const DOMPurify = createDOMPurify(purifyWindow as unknown as Window & typeof globalThis)
@@ -118,8 +119,7 @@ export interface ExtractedArticle {
 export async function extractArticle(url: string): Promise<ExtractedArticle> {
   const response = await fetch(url, {
     headers: {
-      'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 ReadApp/1.0'
+      'User-Agent': DESKTOP_USER_AGENT
     },
     signal: AbortSignal.timeout(20000)
   })

@@ -116,9 +116,16 @@ export function openInAppBrowser(url: string, parent: BrowserWindow | null): voi
   win.on('resize', layout)
 
   // Links clicked inside the in-app browser (e.g. target="_blank") navigate
-  // this same view instead of spawning new OS-level windows.
-  view.webContents.setWindowOpenHandler(({ url: targetUrl }) => {
-    if (isHttpUrl(targetUrl)) void view.webContents.loadURL(targetUrl)
+  // this same view instead of spawning new OS-level windows. But window.open()
+  // popups (disposition 'new-window'), the pattern OAuth sign-in flows use,
+  // get a real child window instead - see the matching comment in
+  // embeddedView.ts for why squashing those breaks login.
+  view.webContents.setWindowOpenHandler(({ url: targetUrl, disposition }) => {
+    if (!isHttpUrl(targetUrl)) return { action: 'deny' }
+    if (disposition === 'new-window') {
+      return { action: 'allow', overrideBrowserWindowOptions: { autoHideMenuBar: true } }
+    }
+    void view.webContents.loadURL(targetUrl)
     return { action: 'deny' }
   })
 
