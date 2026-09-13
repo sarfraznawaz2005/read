@@ -7,6 +7,7 @@ import {
   insertPendingArticle,
   listArticles,
   markArticleOpened,
+  normalizeArticleUrl,
   saveExtractionFailure,
   saveExtractionResult,
   updateArticleStatus
@@ -25,12 +26,12 @@ export async function runExtraction(articleId: string, url: string): Promise<Art
 
 export const articleHandlers = {
   'article:add': async (_event: unknown, url: string, categoryId?: string): Promise<Article> => {
-    const trimmed = url.trim()
-    if (getArticleByUrl(trimmed)) {
+    const normalized = normalizeArticleUrl(url)
+    if (getArticleByUrl(normalized)) {
       throw new Error('This link has already been saved.')
     }
-    const pending = insertPendingArticle(trimmed, categoryId ?? getDefaultCategoryId())
-    return runExtraction(pending.id, trimmed)
+    const pending = insertPendingArticle(normalized, categoryId ?? getDefaultCategoryId())
+    return runExtraction(pending.id, normalized)
   },
   'article:retryExtraction': async (_event: unknown, articleId: string): Promise<Article> => {
     const article = getArticleById(articleId)

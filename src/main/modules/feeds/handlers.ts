@@ -19,6 +19,7 @@ import {
   markFeedItemRead,
   markFeedItemSaved,
   markFeedItemUnread,
+  normalizeFeedUrl,
   renameFeed,
   upsertFeedItems
 } from './repository'
@@ -26,10 +27,11 @@ import type { Article, Feed, FeedItem, FeedScanResult } from '@shared/types'
 
 export const feedHandlers = {
   'feed:add': async (_event: unknown, feedUrl: string): Promise<Feed> => {
-    const existing = getFeedByUrl(feedUrl)
+    const normalizedUrl = normalizeFeedUrl(feedUrl)
+    const existing = getFeedByUrl(normalizedUrl)
     if (existing) return existing
-    const fetched = await fetchFeed(feedUrl)
-    const feed = insertFeed(fetched.title, feedUrl, fetched.siteUrl)
+    const fetched = await fetchFeed(normalizedUrl)
+    const feed = insertFeed(fetched.title, normalizedUrl, fetched.siteUrl)
     upsertFeedItems(feed.id, applyFeedLimits(fetched.items))
     refreshTrayUnreadState()
     return getFeedById(feed.id)!

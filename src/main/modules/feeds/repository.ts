@@ -81,11 +81,33 @@ export function getFeedById(id: string): Feed | null {
   return row ? rowToFeed(row) : null
 }
 
+// Treats URLs that differ only by scheme/host casing, a trailing slash, or a #fragment as the
+// same feed, so "https://x.com/feed" and "https://X.com/feed/#top" are recognized as duplicates.
+export function normalizeFeedUrl(rawUrl: string): string {
+  const trimmed = rawUrl.trim()
+  try {
+    const parsed = new URL(trimmed)
+    parsed.hash = ''
+    if (parsed.pathname.length > 1 && parsed.pathname.endsWith('/')) {
+      parsed.pathname = parsed.pathname.slice(0, -1)
+    }
+    return parsed.toString()
+  } catch {
+    return trimmed.replace(/\/+$/, '')
+  }
+}
+
 export function getFeedByUrl(feedUrl: string): Feed | null {
   const db = getDb()
-  const row = db.prepare(`${FEED_SELECT} WHERE f.feed_url = ?`).get(feedUrl) as unknown as
+  const target = normalizeFeedUrl(feedUrl)
+  const row = db.prepare(`${FEED_SELECT} WHERE f.feed_url = ?`).get(target) as unknown as
     FeedRow | undefined
-  return row ? rowToFeed(row) : null
+  if (row) return rowToFeed(row)
+
+  // Fall back to a normalized scan to catch feeds saved before URL normalization existed.
+  const rows = db.prepare(FEED_SELECT).all() as unknown as FeedRow[]
+  const match = rows.find((r) => normalizeFeedUrl(r.feed_url) === target)
+  return match ? rowToFeed(match) : null
 }
 
 export function insertFeed(title: string, feedUrl: string, siteUrl: string | null): Feed {

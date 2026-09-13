@@ -47,6 +47,24 @@ function rowToArticle(row: ArticleRow): Article {
   }
 }
 
+// Strips an insignificant trailing slash and #fragment; case-insensitivity is handled
+// separately by COLLATE NOCASE. Articles are saved as full-page extractions, so a fragment
+// almost always just scrolls to an anchor on the same page rather than pointing at different
+// content.
+export function normalizeArticleUrl(rawUrl: string): string {
+  const trimmed = rawUrl.trim()
+  try {
+    const parsed = new URL(trimmed)
+    parsed.hash = ''
+    if (parsed.pathname.length > 1 && parsed.pathname.endsWith('/')) {
+      parsed.pathname = parsed.pathname.slice(0, -1)
+    }
+    return parsed.toString()
+  } catch {
+    return trimmed.replace(/\/+$/, '')
+  }
+}
+
 function safeHostname(url: string): string | null {
   try {
     return new URL(url).hostname
@@ -130,9 +148,19 @@ export function getArticleById(id: string): Article | null {
 
 export function getArticleByUrl(url: string): Article | null {
   const db = getDb()
-  const row = db.prepare('SELECT * FROM articles WHERE url = ? COLLATE NOCASE').get(url) as
-    unknown as ArticleRow | undefined
-  return row ? rowToArticle(row) : null
+  const target = normalizeArticleUrl(url)
+  const row = db
+    .prepare('SELECT * FROM articles WHERE url = ? COLLATE NOCASE')
+    .get(target) as unknown as ArticleRow | undefined
+  if (row) return rowToArticle(row)
+
+  // Fall back to a normalized scan to catch articles saved before trailing-slash
+  // normalization existed.
+  const rows = db.prepare('SELECT * FROM articles').all() as unknown as ArticleRow[]
+  const match = rows.find(
+    (r) => normalizeArticleUrl(r.url).toLowerCase() === target.toLowerCase()
+  )
+  return match ? rowToArticle(match) : null
 }
 
 export function listArticles(filter: ArticleListFilter): Article[] {

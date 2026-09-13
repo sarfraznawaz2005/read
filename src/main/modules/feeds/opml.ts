@@ -3,7 +3,7 @@ import { readFile, writeFile } from 'fs/promises'
 import { XMLBuilder, XMLParser } from 'fast-xml-parser'
 import { showDesktopNotification } from '../../notifications'
 import { getMainWindow } from '../../windowRegistry'
-import { getFeedByUrl, insertFeed, listFeeds } from './repository'
+import { getFeedByUrl, insertFeed, listFeeds, normalizeFeedUrl } from './repository'
 
 interface OpmlOutline {
   '@_text'?: string
@@ -42,8 +42,13 @@ export async function importOpml(): Promise<{ added: number; skipped: number } |
   let added = 0
   let skipped = 0
   for (const outline of outlines) {
-    const feedUrl = outline['@_xmlUrl']
-    if (!feedUrl || getFeedByUrl(feedUrl)) {
+    const rawFeedUrl = outline['@_xmlUrl']
+    if (!rawFeedUrl) {
+      skipped += 1
+      continue
+    }
+    const feedUrl = normalizeFeedUrl(rawFeedUrl)
+    if (getFeedByUrl(feedUrl)) {
       skipped += 1
       continue
     }
