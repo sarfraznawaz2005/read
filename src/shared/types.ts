@@ -36,6 +36,14 @@ export interface ArticleListFilter {
   sort?: ArticleSort
 }
 
+export interface ArticleCounts {
+  all: number
+  unread: number
+  favorite: number
+  archived: number
+  byCategory: Record<string, number>
+}
+
 export interface ArticleStatusPatch {
   isRead?: boolean
   isFavorite?: boolean

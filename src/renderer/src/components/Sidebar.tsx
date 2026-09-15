@@ -1,15 +1,19 @@
 import { useState, type KeyboardEvent } from 'react'
 import { Pencil, Rss, X } from 'lucide-react'
-import type { ArticleStatusFilter, Category } from '@shared/types'
+import type { ArticleCounts, ArticleStatusFilter, Category } from '@shared/types'
 import { useAppStore } from '../store/appStore'
 import { useFeedStore } from '../store/feedStore'
 import { toErrorMessage } from '../lib/errorMessage'
 
-const STATUS_FILTERS: { label: string; value: ArticleStatusFilter }[] = [
-  { label: 'All Articles', value: 'all' },
-  { label: 'Unread', value: 'unread' },
-  { label: 'Favorites', value: 'favorite' },
-  { label: 'Archive', value: 'archived' }
+const STATUS_FILTERS: {
+  label: string
+  value: ArticleStatusFilter
+  countKey: Exclude<keyof ArticleCounts, 'byCategory'>
+}[] = [
+  { label: 'All Articles', value: 'all', countKey: 'all' },
+  { label: 'Unread', value: 'unread', countKey: 'unread' },
+  { label: 'Favorites', value: 'favorite', countKey: 'favorite' },
+  { label: 'Archive', value: 'archived', countKey: 'archived' }
 ]
 
 export function Sidebar({
@@ -23,7 +27,7 @@ export function Sidebar({
   onOpenSettings: () => void
   onOpenAnalytics: () => void
 }): React.JSX.Element {
-  const { categories, filter, setFilter, createCategory, renameCategory, deleteCategory } =
+  const { categories, filter, counts, setFilter, createCategory, renameCategory, deleteCategory } =
     useAppStore()
   const totalUnread = useFeedStore((state) =>
     state.feeds.reduce((sum, feed) => sum + feed.unreadCount, 0)
@@ -131,7 +135,10 @@ export function Sidebar({
                   : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
               }`}
             >
-              {item.label}
+              <span>{item.label}</span>
+              <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                {counts[item.countKey]}
+              </span>
             </button>
           ))}
         </div>
@@ -194,10 +201,17 @@ export function Sidebar({
               >
                 <button
                   onClick={() => setFilter({ ...filter, status: 'all', categoryId: category.id })}
-                  className="flex-1 cursor-pointer truncate text-left"
+                  className="flex-1 truncate text-left"
                 >
                   {category.name}
                 </button>
+                <span
+                  className={`text-[11px] font-bold text-slate-600 dark:text-slate-300 ${
+                    category.isDefault ? '' : 'group-hover:hidden'
+                  }`}
+                >
+                  {counts.byCategory[category.id] ?? 0}
+                </span>
                 {!category.isDefault && (
                   <span className="hidden items-center gap-3 group-hover:flex">
                     <button

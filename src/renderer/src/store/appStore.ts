@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { toErrorMessage } from '../lib/errorMessage'
 import type {
   Article,
+  ArticleCounts,
   ArticleListFilter,
   ArticleStatusPatch,
   Category,
@@ -18,6 +19,7 @@ export interface Toast {
 interface AppState {
   categories: Category[]
   articles: Article[]
+  counts: ArticleCounts
   filter: ArticleListFilter
   loading: boolean
   addingArticle: boolean
@@ -25,6 +27,7 @@ interface AppState {
   highlights: Highlight[]
   loadCategories: () => Promise<void>
   loadArticles: () => Promise<void>
+  loadCounts: () => Promise<void>
   setFilter: (filter: ArticleListFilter) => void
   clearToast: () => void
   createCategory: (name: string) => Promise<void>
@@ -51,6 +54,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set, get) => ({
   categories: [],
   articles: [],
+  counts: { all: 0, unread: 0, favorite: 0, archived: 0, byCategory: {} },
   filter: { status: 'all' },
   loading: false,
   addingArticle: false,
@@ -73,6 +77,12 @@ export const useAppStore = create<AppState>((set, get) => ({
         toast: { type: 'error', message: toErrorMessage(error, 'Failed to load articles') }
       })
     }
+    void get().loadCounts()
+  },
+
+  loadCounts: async () => {
+    const counts = await window.api.articles.counts()
+    set({ counts })
   },
 
   setFilter: (filter) => {

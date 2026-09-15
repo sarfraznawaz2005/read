@@ -4,6 +4,7 @@ import {
   deleteArticle,
   getArticleById,
   getArticleByUrl,
+  getArticleCounts,
   insertPendingArticle,
   listArticles,
   markArticleOpened,
@@ -12,7 +13,7 @@ import {
   saveExtractionResult,
   updateArticleStatus
 } from './repository'
-import type { Article, ArticleListFilter, ArticleStatusPatch } from '@shared/types'
+import type { Article, ArticleCounts, ArticleListFilter, ArticleStatusPatch } from '@shared/types'
 
 export async function runExtraction(articleId: string, url: string): Promise<Article> {
   try {
@@ -40,6 +41,7 @@ export const articleHandlers = {
   },
   'article:list': (_event: unknown, filter: ArticleListFilter = {}): Article[] =>
     listArticles(filter),
+  'article:counts': (): ArticleCounts => getArticleCounts(),
   'article:markOpened': (_event: unknown, articleId: string): Article =>
     markArticleOpened(articleId),
   'article:delete': (_event: unknown, articleId: string): void => deleteArticle(articleId),

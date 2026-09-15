@@ -4,6 +4,7 @@ import type {
   Analytics,
   AppSettings,
   Article,
+  ArticleCounts,
   ArticleListFilter,
   ArticleStatusPatch,
   BackupRecord,
@@ -25,6 +26,7 @@ const api = {
       ipcRenderer.invoke('article:retryExtraction', articleId),
     list: (filter: ArticleListFilter = {}): Promise<Article[]> =>
       ipcRenderer.invoke('article:list', filter),
+    counts: (): Promise<ArticleCounts> => ipcRenderer.invoke('article:counts'),
     markOpened: (articleId: string): Promise<Article> =>
       ipcRenderer.invoke('article:markOpened', articleId),
     delete: (articleId: string): Promise<void> => ipcRenderer.invoke('article:delete', articleId),

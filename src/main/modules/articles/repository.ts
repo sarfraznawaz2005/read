@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto'
 import { getDb } from '../../db'
 import type {
   Article,
+  ArticleCounts,
   ArticleListFilter,
   ArticleStatusPatch,
   ExtractionStatus
@@ -187,9 +188,10 @@ export function listArticles(filter: ArticleListFilter): Article[] {
       clauses.push('is_archived = 1')
       break
     case 'all':
-      break
     default:
-      clauses.push('is_archived = 0')
+      if (!filter.categoryId) {
+        clauses.push('is_archived = 0')
+      }
   }
 
   if (filter.query) {
@@ -211,6 +213,40 @@ const ORDER_BY: Record<NonNullable<ArticleListFilter['sort']>, string> = {
   date_asc: 'saved_at ASC',
   title_asc: 'title COLLATE NOCASE ASC',
   read_status: 'is_read ASC, saved_at DESC'
+}
+
+export function getArticleCounts(): ArticleCounts {
+  const db = getDb()
+  const totals = db
+    .prepare(
+      `SELECT
+         SUM(CASE WHEN is_archived = 0 THEN 1 ELSE 0 END) AS all_count,
+         SUM(CASE WHEN is_archived = 0 AND is_read = 0 THEN 1 ELSE 0 END) AS unread_count,
+         SUM(CASE WHEN is_favorite = 1 THEN 1 ELSE 0 END) AS favorite_count,
+         SUM(CASE WHEN is_archived = 1 THEN 1 ELSE 0 END) AS archived_count
+       FROM articles`
+    )
+    .get() as {
+    all_count: number | null
+    unread_count: number | null
+    favorite_count: number | null
+    archived_count: number | null
+  }
+
+  const categoryRows = db
+    .prepare('SELECT category_id, COUNT(*) AS count FROM articles GROUP BY category_id')
+    .all() as { category_id: string; count: number }[]
+
+  const byCategory: Record<string, number> = {}
+  for (const row of categoryRows) byCategory[row.category_id] = row.count
+
+  return {
+    all: totals.all_count ?? 0,
+    unread: totals.unread_count ?? 0,
+    favorite: totals.favorite_count ?? 0,
+    archived: totals.archived_count ?? 0,
+    byCategory
+  }
 }
 
 export function updateArticleStatus(id: string, patch: ArticleStatusPatch): Article {
