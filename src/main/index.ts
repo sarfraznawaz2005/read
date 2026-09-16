@@ -35,6 +35,21 @@ function isHttpUrl(url: string): boolean {
 
 app.setName('read-app')
 
+// Only one copy of the app should run at a time. If another instance is
+// already running, this instance gets the lock request back as false, so it
+// quits immediately and lets the second-instance handler below focus the
+// existing window instead.
+if (!app.requestSingleInstanceLock()) {
+  app.quit()
+}
+
+app.on('second-instance', () => {
+  if (!mainWindow) return
+  if (mainWindow.isMinimized()) mainWindow.restore()
+  if (!mainWindow.isVisible()) mainWindow.show()
+  mainWindow.focus()
+})
+
 // Applies to every window/view that doesn't set its own UA (main window,
 // embedded feed pane, popped-out in-app browser) - stops "Electron/x.y.z"
 // from showing up in what sites see and getting flagged as a bot/automation
