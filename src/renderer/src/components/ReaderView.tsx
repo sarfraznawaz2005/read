@@ -8,13 +8,11 @@ import {
   ExternalLink,
   Globe,
   Highlighter,
-  MessageCircle,
   RotateCw,
   X
 } from 'lucide-react'
 import type { Article } from '@shared/types'
 import { useAppStore } from '../store/appStore'
-import { useChatStore } from '../store/chatStore'
 import { useEmbeddedPage } from '../hooks/useEmbeddedPage'
 import { HighlightableContent, type HighlightableContentHandle } from './HighlightableContent'
 
@@ -212,15 +210,6 @@ export function ReaderView({
             className="inline-flex items-center justify-center rounded-lg px-2 py-1.5 text-xs text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-800"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={() =>
-              useChatStore.getState().openChat({ type: 'article', articleId: article.id })
-            }
-            title="Chat about this article"
-            className="inline-flex items-center justify-center rounded-lg px-2 py-1.5 text-xs text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-800"
-          >
-            <MessageCircle className="h-3.5 w-3.5" />
           </button>
 
           {canShowOriginal && (
@@ -424,7 +413,7 @@ export function ReaderView({
         )}
 
         {!showOriginal && (
-          <div className="absolute bottom-4 right-4 flex flex-col gap-2">
+          <div className="absolute bottom-24 right-4 flex flex-col gap-2">
             {progress > 0.02 && (
               <button
                 onClick={scrollToTop}

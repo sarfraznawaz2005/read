@@ -159,7 +159,6 @@ function App(): React.JSX.Element {
         onOpenFeeds={() => setFeedsOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenAnalytics={() => setAnalyticsOpen(true)}
-        onOpenChat={() => useChatStore.getState().openChat({ type: 'all' })}
       />
       <main className="flex-1 overflow-y-auto p-6">
         <LibraryToolbar viewMode={viewMode} onChangeViewMode={setViewMode} />

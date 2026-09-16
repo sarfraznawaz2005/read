@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { BookOpen, Library, Send, Settings, Trash2, X } from 'lucide-react'
+import { BookOpen, Library, MessageCircle, Send, Settings, Trash2, X } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeSanitize from 'rehype-sanitize'
 import { useChatStore } from '../store/chatStore'
 import { AiSettingsPanel } from './AiSettingsPanel'
+import { markdownSanitizeSchema, markdownUrlTransform } from '../lib/markdownSanitizeSchema'
 import type { ChatMessage } from '@shared/types'
 
 const ARTICLE_TEMPLATES = [
@@ -30,13 +34,14 @@ export function ChatPanel({
 }: {
   articleContext: ArticleContext | null
   onOpenArticle?: (articleId: string) => void
-}): React.JSX.Element | null {
+}): React.JSX.Element {
   const {
     isOpen,
     scope,
     sessionsByKey,
     sending,
     error,
+    openChat,
     closeChat,
     setScope,
     sendMessage,
@@ -45,6 +50,7 @@ export function ChatPanel({
   const [input, setInput] = useState('')
   const [showSettings, setShowSettings] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
 
   const key = scope.type === 'article' ? `article:${scope.articleId}` : 'all'
   const messages = sessionsByKey[key]?.messages ?? []
@@ -62,7 +68,33 @@ export function ChatPanel({
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages])
 
-  if (!isOpen) return null
+  // Clicking anywhere outside the panel closes it, same dismiss pattern as
+  // ArticleCard's context menu.
+  useEffect(() => {
+    if (!isOpen) return
+    function handleOutsideClick(event: MouseEvent): void {
+      if (panelRef.current?.contains(event.target as Node)) return
+      closeChat()
+    }
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [isOpen, closeChat])
+
+  if (!isOpen) {
+    return (
+      <button
+        onClick={() =>
+          openChat(
+            articleContext ? { type: 'article', articleId: articleContext.id } : { type: 'all' }
+          )
+        }
+        title="Chat"
+        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-500 text-white shadow-xl transition-transform hover:scale-105 hover:bg-indigo-600"
+      >
+        <MessageCircle className="h-6 w-6" />
+      </button>
+    )
+  }
 
   function handleSend(): void {
     if (!input.trim() || sending) return
@@ -78,7 +110,10 @@ export function ChatPanel({
   const templates = scope.type === 'article' ? ARTICLE_TEMPLATES : LIBRARY_TEMPLATES
 
   return (
-    <div className="fixed inset-y-0 right-0 z-40 flex w-[560px] max-w-full flex-col border-l border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+    <div
+      ref={panelRef}
+      className="fixed inset-y-0 right-0 z-40 flex w-[560px] max-w-full flex-col border-l border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+    >
       <header className="flex items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
         <h2 className="text-base font-bold">Chat</h2>
         <div className="flex items-center gap-1">
@@ -207,13 +242,27 @@ function MessageBubble({
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[85%] whitespace-pre-wrap rounded-xl px-4 py-2.5 text-sm ${
+        className={`rounded-xl px-4 py-2.5 text-sm ${
           isUser
-            ? 'bg-indigo-500 text-white'
-            : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100'
+            ? 'max-w-[85%] whitespace-pre-wrap bg-indigo-500 text-white'
+            : 'w-full bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100'
         }`}
       >
-        {message.content || (
+        {message.content ? (
+          isUser ? (
+            message.content
+          ) : (
+            <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1.5 prose-headings:my-2 prose-ul:my-1.5 prose-ol:my-1.5 prose-pre:my-1.5 prose-hr:my-3">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[[rehypeSanitize, markdownSanitizeSchema]]}
+                urlTransform={markdownUrlTransform}
+              >
+                {message.content}
+              </ReactMarkdown>
+            </div>
+          )
+        ) : (
           <span className="inline-flex gap-1 opacity-50">
             <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-current" />
             <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-current [animation-delay:0.15s]" />

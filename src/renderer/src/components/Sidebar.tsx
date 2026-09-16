@@ -1,5 +1,5 @@
 import { useState, type KeyboardEvent } from 'react'
-import { MessageCircle, Pencil, Rss, X } from 'lucide-react'
+import { Pencil, Rss, X } from 'lucide-react'
 import type { ArticleCounts, ArticleStatusFilter, Category } from '@shared/types'
 import { useAppStore } from '../store/appStore'
 import { useFeedStore } from '../store/feedStore'
@@ -20,14 +20,12 @@ export function Sidebar({
   onAddClick,
   onOpenFeeds,
   onOpenSettings,
-  onOpenAnalytics,
-  onOpenChat
+  onOpenAnalytics
 }: {
   onAddClick: () => void
   onOpenFeeds: () => void
   onOpenSettings: () => void
   onOpenAnalytics: () => void
-  onOpenChat: () => void
 }): React.JSX.Element {
   const { categories, filter, counts, setFilter, createCategory, renameCategory, deleteCategory } =
     useAppStore()
@@ -119,13 +117,6 @@ export function Sidebar({
               {totalUnread}
             </span>
           )}
-        </button>
-        <button
-          onClick={onOpenChat}
-          className="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-left text-xs text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-        >
-          <MessageCircle className="h-3.5 w-3.5" />
-          <span className="flex-1">Chat</span>
         </button>
       </div>
 
