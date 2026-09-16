@@ -1,5 +1,6 @@
 import { extractArticle } from '../../extraction'
 import { getDefaultCategoryId } from '../categories/repository'
+import { scheduleReembed } from '../ai/embeddings/indexer'
 import {
   deleteArticle,
   getArticleById,
@@ -18,7 +19,9 @@ import type { Article, ArticleCounts, ArticleListFilter, ArticleStatusPatch } fr
 export async function runExtraction(articleId: string, url: string): Promise<Article> {
   try {
     const result = await extractArticle(url)
-    return saveExtractionResult(articleId, result)
+    const article = saveExtractionResult(articleId, result)
+    scheduleReembed(articleId)
+    return article
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown extraction error'
     return saveExtractionFailure(articleId, message)

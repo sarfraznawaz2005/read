@@ -12,6 +12,7 @@ import { feedHandlers } from './modules/feeds/handlers'
 import { scanAllFeeds } from './modules/feeds/scanService'
 import { settingsHandlers } from './modules/settings/handlers'
 import { analyticsHandlers } from './modules/analytics/handlers'
+import { aiHandlers } from './modules/ai/handlers'
 import { getSettings } from './modules/settings/repository'
 import { performBackup } from './modules/settings/backupService'
 import { ensureTray, refreshTrayUnreadState } from './tray'
@@ -209,6 +210,7 @@ app.whenReady().then(() => {
     feedHandlers,
     settingsHandlers,
     analyticsHandlers,
+    aiHandlers,
     createBrowserHandlers(() => mainWindow),
     createEmbeddedHandlers(() => mainWindow)
   )

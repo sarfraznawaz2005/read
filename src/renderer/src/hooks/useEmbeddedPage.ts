@@ -22,7 +22,12 @@ export function useEmbeddedPage(url: string | null): {
   const anchorRef = useRef<HTMLDivElement>(null)
   const [state, setState] = useState<BrowserChromeState>(EMPTY_STATE)
   const stateRef = useRef(state)
-  stateRef.current = state
+  // A layout effect (not a render-body write) keeps this safe under concurrent
+  // rendering, while still landing before any of the layout/paint effects below
+  // that read stateRef.current.
+  useLayoutEffect(() => {
+    stateRef.current = state
+  }, [state])
   // Whether a caller (e.g. to clear the way for a native confirm() dialog)
   // wants the view shown, independent of whether the page is still loading.
   const externalVisibleRef = useRef(true)

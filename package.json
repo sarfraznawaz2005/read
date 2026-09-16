@@ -21,9 +21,13 @@
     "build:linux": "electron-vite build && electron-builder --linux"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.16",
+    "@ai-sdk/openai-compatible": "^3.0.10",
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
+    "@huggingface/transformers": "^4.2.0",
     "@mozilla/readability": "^0.6.0",
+    "ai": "7",
     "dompurify": "^3.4.15",
     "electron-window-state": "^5.0.3",
     "fast-xml-parser": "^5.11.1",
@@ -32,6 +36,7 @@
     "lucide-react": "^1.45.0",
     "nanoid": "^6.0.1",
     "rss-parser": "^3.13.0",
+    "zod": "^3.25.76",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
@@ -66,6 +71,8 @@
     "electron-winstaller@5.4.0": true,
     "esbuild@0.25.12": true,
     "esbuild@0.28.2": true,
-    "better-sqlite3@13.0.3": true
+    "better-sqlite3@13.0.3": true,
+    "onnxruntime-node@1.30.0": true,
+    "protobufjs@7.6.6": true
   }
 }

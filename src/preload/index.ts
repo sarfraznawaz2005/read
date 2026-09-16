@@ -1,6 +1,9 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import type {
+  AiProviderType,
+  AiSettings,
+  AiSettingsPatch,
   Analytics,
   AppSettings,
   Article,
@@ -10,11 +13,17 @@ import type {
   BackupRecord,
   BrowserChromeState,
   Category,
+  ChatScope,
+  ChatStreamChunk,
+  ChatStreamComplete,
+  ChatStreamError,
+  EmbeddingModelStatusDto,
   Feed,
   FeedItem,
   FeedScanResult,
   Highlight,
   HighlightColor,
+  ModelListResult,
   TextQuoteAnchor
 } from '@shared/types'
 
@@ -132,6 +141,61 @@ const api = {
       const listener = (): void => callback()
       ipcRenderer.on('app:openFeeds', listener)
       return () => ipcRenderer.off('app:openFeeds', listener)
+    }
+  },
+  ai: {
+    getSettings: (): Promise<AiSettings> => ipcRenderer.invoke('ai:getSettings'),
+    updateSettings: (patch: AiSettingsPatch): Promise<AiSettings> =>
+      ipcRenderer.invoke('ai:updateSettings', patch),
+    listModels: (provider: AiProviderType, apiKey?: string): Promise<ModelListResult> =>
+      ipcRenderer.invoke('ai:listModels', provider, apiKey),
+    testConnection: (
+      provider: AiProviderType,
+      apiKey: string | undefined,
+      model: string | null
+    ): Promise<{ success: boolean; error?: string }> =>
+      ipcRenderer.invoke('ai:testConnection', provider, apiKey, model),
+    embeddingModel: {
+      getStatus: (): Promise<EmbeddingModelStatusDto> =>
+        ipcRenderer.invoke('ai:embeddingModel:getStatus'),
+      isReady: (): Promise<boolean> => ipcRenderer.invoke('ai:embeddingModel:isReady'),
+      download: (): Promise<{ success: boolean }> =>
+        ipcRenderer.invoke('ai:embeddingModel:download'),
+      reindexAll: (): Promise<{ success: boolean; indexed: number }> =>
+        ipcRenderer.invoke('ai:embeddingModel:reindexAll'),
+      onStatus: (callback: (status: EmbeddingModelStatusDto) => void): (() => void) => {
+        const listener = (_event: unknown, status: EmbeddingModelStatusDto): void =>
+          callback(status)
+        ipcRenderer.on('ai:embeddingModelStatus', listener)
+        return () => ipcRenderer.off('ai:embeddingModelStatus', listener)
+      }
+    },
+    chat: {
+      send: (
+        sessionId: string,
+        content: string,
+        scope: ChatScope
+      ): Promise<{ messageId: string }> =>
+        ipcRenderer.invoke('ai:chat:send', { sessionId, content, scope }),
+      abort: (sessionId: string): Promise<{ success: boolean }> =>
+        ipcRenderer.invoke('ai:chat:abort', sessionId),
+      clear: (sessionId: string): Promise<{ success: boolean }> =>
+        ipcRenderer.invoke('ai:chat:clear', sessionId),
+      onChunk: (callback: (chunk: ChatStreamChunk) => void): (() => void) => {
+        const listener = (_event: unknown, chunk: ChatStreamChunk): void => callback(chunk)
+        ipcRenderer.on('ai:chatChunk', listener)
+        return () => ipcRenderer.off('ai:chatChunk', listener)
+      },
+      onComplete: (callback: (result: ChatStreamComplete) => void): (() => void) => {
+        const listener = (_event: unknown, result: ChatStreamComplete): void => callback(result)
+        ipcRenderer.on('ai:chatComplete', listener)
+        return () => ipcRenderer.off('ai:chatComplete', listener)
+      },
+      onError: (callback: (result: ChatStreamError) => void): (() => void) => {
+        const listener = (_event: unknown, result: ChatStreamError): void => callback(result)
+        ipcRenderer.on('ai:chatError', listener)
+        return () => ipcRenderer.off('ai:chatError', listener)
+      }
     }
   }
 }

@@ -7,9 +7,11 @@ import { LibraryToolbar } from './components/LibraryToolbar'
 import { FeedReaderView } from './components/FeedReaderView'
 import { SettingsView } from './components/SettingsView'
 import { AnalyticsView } from './components/AnalyticsView'
+import { ChatPanel } from './components/ChatPanel'
 import { useAppStore } from './store/appStore'
 import { useSettingsStore } from './store/settingsStore'
 import { useFeedStore } from './store/feedStore'
+import { useChatStore } from './store/chatStore'
 
 const VIEW_MODE_KEY = 'read:libraryViewMode'
 
@@ -77,28 +79,77 @@ function App(): React.JSX.Element {
   }, [])
 
   const openArticle = articles.find((a) => a.id === openArticleId) ?? null
+  const articleContext = openArticle
+    ? { id: openArticle.id, title: openArticle.title ?? 'Untitled' }
+    : null
+
+  const currentView = settingsOpen
+    ? 'settings'
+    : analyticsOpen
+      ? 'analytics'
+      : feedsOpen
+        ? 'feeds'
+        : openArticleId
+          ? `article:${openArticleId}`
+          : 'library'
+
+  // Chat is scoped to whatever page it was opened from, so leaving that page
+  // (feeds, settings, a different article, back to the library) closes it
+  // rather than leaving a stale panel floating over an unrelated view.
+  useEffect(() => {
+    useChatStore.getState().closeChat()
+  }, [currentView])
+
+  function openArticleFromChat(articleId: string): void {
+    setSettingsOpen(false)
+    setAnalyticsOpen(false)
+    setFeedsOpen(false)
+    setOpenArticleId(articleId)
+  }
+
+  const chatPanel = (
+    <ChatPanel articleContext={articleContext} onOpenArticle={openArticleFromChat} />
+  )
 
   if (settingsOpen) {
-    return <SettingsView onBack={() => setSettingsOpen(false)} />
+    return (
+      <>
+        <SettingsView onBack={() => setSettingsOpen(false)} />
+        {chatPanel}
+      </>
+    )
   }
 
   if (analyticsOpen) {
-    return <AnalyticsView onBack={() => setAnalyticsOpen(false)} />
+    return (
+      <>
+        <AnalyticsView onBack={() => setAnalyticsOpen(false)} />
+        {chatPanel}
+      </>
+    )
   }
 
   if (feedsOpen) {
     return (
-      <FeedReaderView
-        onBack={() => {
-          setFeedsOpen(false)
-          void loadArticles()
-        }}
-      />
+      <>
+        <FeedReaderView
+          onBack={() => {
+            setFeedsOpen(false)
+            void loadArticles()
+          }}
+        />
+        {chatPanel}
+      </>
     )
   }
 
   if (openArticle) {
-    return <ReaderView article={openArticle} onBack={() => setOpenArticleId(null)} />
+    return (
+      <>
+        <ReaderView article={openArticle} onBack={() => setOpenArticleId(null)} />
+        {chatPanel}
+      </>
+    )
   }
 
   return (
@@ -108,6 +159,7 @@ function App(): React.JSX.Element {
         onOpenFeeds={() => setFeedsOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenAnalytics={() => setAnalyticsOpen(true)}
+        onOpenChat={() => useChatStore.getState().openChat({ type: 'all' })}
       />
       <main className="flex-1 overflow-y-auto p-6">
         <LibraryToolbar viewMode={viewMode} onChangeViewMode={setViewMode} />
@@ -151,6 +203,7 @@ function App(): React.JSX.Element {
         </div>
       </main>
       {dialogOpen && <AddArticleDialog onClose={() => setDialogOpen(false)} />}
+      {chatPanel}
     </div>
   )
 }

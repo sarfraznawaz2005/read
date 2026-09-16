@@ -144,3 +144,73 @@ export interface BrowserChromeState {
   canGoForward: boolean
   loading: boolean
 }
+
+export const AI_PROVIDERS = ['opencode', 'gemini', 'openrouter'] as const
+export type AiProviderType = (typeof AI_PROVIDERS)[number]
+
+// Returned to the renderer instead of the raw key — the key itself never leaves
+// the main process once saved (see main/modules/ai/secureStore.ts).
+export interface AiSettings {
+  provider: AiProviderType
+  model: string | null
+  hasGeminiApiKey: boolean
+  hasOpenRouterApiKey: boolean
+}
+
+export interface AiSettingsPatch {
+  provider?: AiProviderType
+  model?: string | null
+  geminiApiKey?: string | null
+  openRouterApiKey?: string | null
+}
+
+export interface ModelListResult {
+  models: string[]
+  isFallback: boolean
+  fallbackReason?: string
+}
+
+export type EmbeddingModelStatus = 'not_downloaded' | 'downloading' | 'ready' | 'error'
+
+export interface EmbeddingModelStatusDto {
+  status: EmbeddingModelStatus
+  progress: number | null
+  message?: string
+  sizeMb: number
+  indexedArticles: number
+  totalArticles: number
+}
+
+export type ChatScope = { type: 'article'; articleId: string } | { type: 'all' }
+
+export type ChatRole = 'user' | 'assistant'
+
+export interface ChatCitation {
+  articleId: string
+  title: string
+}
+
+export interface ChatMessage {
+  id: string
+  role: ChatRole
+  content: string
+  citations?: ChatCitation[]
+}
+
+export interface ChatStreamChunk {
+  sessionId: string
+  messageId: string
+  token: string
+}
+
+export interface ChatStreamComplete {
+  sessionId: string
+  messageId: string
+  content: string
+  citations: ChatCitation[]
+}
+
+export interface ChatStreamError {
+  sessionId: string
+  error: string
+}

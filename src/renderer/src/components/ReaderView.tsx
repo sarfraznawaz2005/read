@@ -8,11 +8,13 @@ import {
   ExternalLink,
   Globe,
   Highlighter,
+  MessageCircle,
   RotateCw,
   X
 } from 'lucide-react'
 import type { Article } from '@shared/types'
 import { useAppStore } from '../store/appStore'
+import { useChatStore } from '../store/chatStore'
 import { useEmbeddedPage } from '../hooks/useEmbeddedPage'
 import { HighlightableContent, type HighlightableContentHandle } from './HighlightableContent'
 
@@ -211,6 +213,15 @@ export function ReaderView({
           >
             <ExternalLink className="h-3.5 w-3.5" />
           </button>
+          <button
+            onClick={() =>
+              useChatStore.getState().openChat({ type: 'article', articleId: article.id })
+            }
+            title="Chat about this article"
+            className="inline-flex items-center justify-center rounded-lg px-2 py-1.5 text-xs text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-800"
+          >
+            <MessageCircle className="h-3.5 w-3.5" />
+          </button>
 
           {canShowOriginal && (
             <button
@@ -242,51 +253,54 @@ export function ReaderView({
             </button>
           )}
 
-          {!showOriginal && (findOpen ? (
-            <div className="flex items-center gap-1.5 rounded-md border border-indigo-300 bg-white px-2 py-1 dark:border-indigo-700 dark:bg-slate-800">
-              <input
-                autoFocus
-                value={findQuery}
-                onChange={(event) => runFind(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key !== 'Enter') return
-                  if (event.shiftKey) contentRef.current?.findPrev()
-                  else contentRef.current?.findNext()
-                }}
-                placeholder="Find in article..."
-                className="w-36 text-xs text-slate-700 focus:outline-none dark:bg-transparent dark:text-slate-200"
-              />
-              {findQuery && <span className="text-[10px] text-slate-400">{findCount} matches</span>}
+          {!showOriginal &&
+            (findOpen ? (
+              <div className="flex items-center gap-1.5 rounded-md border border-indigo-300 bg-white px-2 py-1 dark:border-indigo-700 dark:bg-slate-800">
+                <input
+                  autoFocus
+                  value={findQuery}
+                  onChange={(event) => runFind(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key !== 'Enter') return
+                    if (event.shiftKey) contentRef.current?.findPrev()
+                    else contentRef.current?.findNext()
+                  }}
+                  placeholder="Find in article..."
+                  className="w-36 text-xs text-slate-700 focus:outline-none dark:bg-transparent dark:text-slate-200"
+                />
+                {findQuery && (
+                  <span className="text-[10px] text-slate-400">{findCount} matches</span>
+                )}
+                <button
+                  onClick={() => contentRef.current?.findPrev()}
+                  className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={() => contentRef.current?.findNext()}
+                  className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                >
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={closeFind}
+                  className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
               <button
-                onClick={() => contentRef.current?.findPrev()}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                onClick={() => setFindOpen(true)}
+                className="flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-500 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
               >
-                <ChevronUp className="h-3.5 w-3.5" />
+                <span>Find in article...</span>
+                <kbd className="rounded bg-slate-100 px-1 text-[10px] text-slate-400 dark:bg-slate-700">
+                  Ctrl+F
+                </kbd>
               </button>
-              <button
-                onClick={() => contentRef.current?.findNext()}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              >
-                <ChevronDown className="h-3.5 w-3.5" />
-              </button>
-              <button
-                onClick={closeFind}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setFindOpen(true)}
-              className="flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-500 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
-            >
-              <span>Find in article...</span>
-              <kbd className="rounded bg-slate-100 px-1 text-[10px] text-slate-400 dark:bg-slate-700">
-                Ctrl+F
-              </kbd>
-            </button>
-          ))}
+            ))}
 
           <div className="flex items-center gap-1.5 rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">
             <select
