@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { LayoutGrid, List } from 'lucide-react'
+import { LayoutGrid, List, Rows3 } from 'lucide-react'
 import type { ArticleSort } from '@shared/types'
 import { useAppStore } from '../store/appStore'
 
@@ -14,8 +14,8 @@ export function LibraryToolbar({
   viewMode,
   onChangeViewMode
 }: {
-  viewMode: 'card' | 'list'
-  onChangeViewMode: (mode: 'card' | 'list') => void
+  viewMode: 'card' | 'list' | 'compact'
+  onChangeViewMode: (mode: 'card' | 'list' | 'compact') => void
 }): React.JSX.Element {
   const { filter, setFilter } = useAppStore()
   const [query, setQuery] = useState(filter.query ?? '')
@@ -79,6 +79,17 @@ export function LibraryToolbar({
           }`}
         >
           <List className="h-3.5 w-3.5" />
+        </button>
+        <button
+          title="Compact view (titles only)"
+          onClick={() => onChangeViewMode('compact')}
+          className={`inline-flex items-center justify-center rounded-md px-2 py-1 text-xs ${
+            viewMode === 'compact'
+              ? 'bg-indigo-600 text-white'
+              : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700'
+          }`}
+        >
+          <Rows3 className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>

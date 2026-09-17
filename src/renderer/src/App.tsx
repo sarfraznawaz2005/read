@@ -15,8 +15,9 @@ import { useChatStore } from './store/chatStore'
 
 const VIEW_MODE_KEY = 'read:libraryViewMode'
 
-function loadStoredViewMode(): 'card' | 'list' {
-  return localStorage.getItem(VIEW_MODE_KEY) === 'list' ? 'list' : 'card'
+function loadStoredViewMode(): 'card' | 'list' | 'compact' {
+  const stored = localStorage.getItem(VIEW_MODE_KEY)
+  return stored === 'list' || stored === 'compact' ? stored : 'card'
 }
 
 function App(): React.JSX.Element {
@@ -26,11 +27,11 @@ function App(): React.JSX.Element {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [openArticleId, setOpenArticleId] = useState<string | null>(null)
   const [feedsOpen, setFeedsOpen] = useState(false)
-  const [viewMode, setViewModeState] = useState<'card' | 'list'>(loadStoredViewMode)
+  const [viewMode, setViewModeState] = useState<'card' | 'list' | 'compact'>(loadStoredViewMode)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [analyticsOpen, setAnalyticsOpen] = useState(false)
 
-  function setViewMode(mode: 'card' | 'list'): void {
+  function setViewMode(mode: 'card' | 'list' | 'compact'): void {
     setViewModeState(mode)
     localStorage.setItem(VIEW_MODE_KEY, mode)
   }
@@ -188,7 +189,9 @@ function App(): React.JSX.Element {
           className={
             viewMode === 'card'
               ? 'grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-              : 'flex flex-col gap-2'
+              : viewMode === 'compact'
+                ? 'grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
+                : 'flex flex-col gap-2'
           }
         >
           {articles.map((article) => (

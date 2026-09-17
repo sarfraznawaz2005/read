@@ -13,6 +13,12 @@ asarUnpack:
   - resources/**
 win:
   executableName: Read
+  # onnxruntime-node (used for local AI embeddings) ships prebuilt binaries for
+  # every OS — a Windows build never needs the mac/linux ones, and they're
+  # ~90MB of dead weight electron-builder would otherwise scan and copy.
+  files:
+    - '!node_modules/onnxruntime-node/bin/napi-v*/darwin/**'
+    - '!node_modules/onnxruntime-node/bin/napi-v*/linux/**'
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

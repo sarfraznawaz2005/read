@@ -48,7 +48,7 @@ export function AnalyticsView({ onBack }: { onBack: () => void }): React.JSX.Ele
         </div>
       </div>
 
-      <div className="flex-1 space-y-8 overflow-y-auto p-8">
+      <div className="flex h-full flex-col gap-8 overflow-y-auto p-8">
         <div className="grid grid-cols-1 gap-5 md:grid-cols-4">
           <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-slate-800/40">
             <div className="text-xs font-medium text-slate-400">Read Completion Rate</div>
@@ -86,15 +86,15 @@ export function AnalyticsView({ onBack }: { onBack: () => void }): React.JSX.Ele
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-slate-800/40 md:col-span-2">
+        <div className="grid flex-1 grid-cols-1 gap-5 md:grid-cols-3">
+          <div className="flex min-h-[280px] flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-slate-800/40 md:col-span-2">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Weekly Reading Activity (Articles Marked Read)
               </h4>
               <span className="font-mono text-xs text-slate-400">Past 7 Days</span>
             </div>
-            <div className="flex h-44 items-end justify-between gap-3 border-b border-slate-200 pb-2 pt-4 dark:border-slate-700">
+            <div className="flex flex-1 items-end justify-between gap-3 border-b border-slate-200 pb-2 pt-4 dark:border-slate-700">
               {weeklyDays.map((day) => (
                 <div key={day.date} className="flex h-full flex-1 flex-col items-center gap-1.5">
                   <span className="font-mono text-[10px] text-slate-400">{day.count}</span>
@@ -110,7 +110,7 @@ export function AnalyticsView({ onBack }: { onBack: () => void }): React.JSX.Ele
             </div>
           </div>
 
-          <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-slate-800/40">
+          <div className="flex min-h-[280px] flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-slate-800/40">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
               Category Breakdown
             </h4>

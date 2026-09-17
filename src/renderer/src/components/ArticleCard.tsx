@@ -10,7 +10,7 @@ export function ArticleCard({
 }: {
   article: Article
   onOpen: (articleId: string) => void
-  view?: 'card' | 'list'
+  view?: 'card' | 'list' | 'compact'
 }): React.JSX.Element {
   const { updateStatus, retryExtraction, deleteArticle } = useAppStore()
   const canOpen = article.extractionStatus !== 'pending'
@@ -104,6 +104,39 @@ export function ArticleCard({
     </div>
   )
 
+  if (view === 'compact') {
+    return (
+      <div
+        className={`relative flex items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-colors hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-indigo-500 ${
+          canOpen ? 'cursor-pointer' : ''
+        }`}
+        onClick={() => canOpen && onOpen(article.id)}
+        onContextMenu={(event) => {
+          event.preventDefault()
+          setContextMenu({ x: event.clientX, y: event.clientY })
+        }}
+      >
+        <h4
+          className={`line-clamp-3 text-sm font-medium ${
+            article.isRead
+              ? 'text-slate-400 dark:text-slate-500'
+              : 'text-slate-800 dark:text-slate-100'
+          }`}
+        >
+          {article.title ?? article.url}
+        </h4>
+        {article.extractionStatus === 'pending' && (
+          <span className="flex-shrink-0 text-[10px] text-indigo-500">Saving…</span>
+        )}
+        {article.extractionStatus === 'failed' && (
+          <span className="flex-shrink-0 text-[10px] text-rose-500">Failed</span>
+        )}
+
+        {contextMenuEl}
+      </div>
+    )
+  }
+
   if (view === 'list') {
     return (
       <div
@@ -118,7 +151,13 @@ export function ArticleCard({
           onClick={() => canOpen && onOpen(article.id)}
         >
           <div className="flex items-center gap-2">
-            <h4 className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
+            <h4
+              className={`truncate text-sm font-semibold ${
+                article.isRead
+                  ? 'text-slate-400 dark:text-slate-500'
+                  : 'text-slate-800 dark:text-slate-100'
+              }`}
+            >
               {article.title ?? article.url}
             </h4>
             {article.extractionStatus === 'pending' && (
@@ -208,7 +247,13 @@ export function ArticleCard({
             )}
           </div>
         </div>
-        <h4 className="line-clamp-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+        <h4
+          className={`line-clamp-2 text-sm font-semibold ${
+            article.isRead
+              ? 'text-slate-400 dark:text-slate-500'
+              : 'text-slate-800 dark:text-slate-100'
+          }`}
+        >
           {article.title ?? article.url}
         </h4>
         {article.extractionStatus === 'failed' && article.extractionError && (
