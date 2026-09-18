@@ -145,6 +145,16 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
 
   const embedUrl = selectedItem && isHttpUrl(selectedItem.link) ? selectedItem.link : null
   const { anchorRef, state: embedState, setVisible: setEmbedVisible } = useEmbeddedPage(embedUrl)
+  // null = not being edited, so the bar tracks the live page URL instead.
+  const [embedUrlDraft, setEmbedUrlDraft] = useState<string | null>(null)
+
+  function navigateEmbed(): void {
+    const value = (embedUrlDraft ?? '').trim()
+    setEmbedUrlDraft(null)
+    if (!value) return
+    const target = /^[a-z][a-z0-9+.-]*:\/\//i.test(value) ? value : `https://${value}`
+    void window.api.embed.show(target)
+  }
 
   function confirmBlocking(message: string): boolean {
     setEmbedVisible(false)
@@ -464,10 +474,10 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 border-b border-slate-200 p-3 dark:border-slate-800">
           <button
             onClick={onBack}
-            className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+            className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-bold text-blue-600 hover:bg-blue-100 hover:text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900 dark:hover:text-blue-100"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Library
+            Back
           </button>
           <span className="text-center text-xs font-bold text-slate-500 dark:text-slate-400">
             Articles ({feedItems.length})
@@ -487,7 +497,7 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
               disabled={refreshing}
               className="inline-flex items-center justify-center rounded px-1.5 py-0.5 text-slate-500 hover:bg-slate-200 disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800"
             >
-              {refreshing ? '…' : <RotateCw className="h-3.5 w-3.5" />}
+              <RotateCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
@@ -685,13 +695,32 @@ export function FeedReaderView({ onBack }: { onBack: () => void }): React.JSX.El
                   >
                     <RotateCw className="h-3.5 w-3.5" />
                   </button>
-                  <span className="flex min-w-0 flex-1 items-center gap-1.5 truncate text-[11px] text-slate-400">
+                  <span className="flex min-w-0 flex-1 items-center gap-1.5 rounded border border-transparent bg-white px-1.5 focus-within:border-indigo-400 dark:bg-slate-900">
                     {embedState.loading && (
                       <span className="h-2.5 w-2.5 flex-shrink-0 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-500 dark:border-slate-600 dark:border-t-indigo-400" />
                     )}
-                    <span className="truncate">
-                      {embedState.loading ? 'Loading…' : embedState.url || embedUrl}
-                    </span>
+                    <input
+                      type="text"
+                      spellCheck={false}
+                      value={embedUrlDraft ?? embedState.url ?? embedUrl ?? ''}
+                      onFocus={(event) => {
+                        setEmbedUrlDraft(embedState.url || embedUrl || '')
+                        event.currentTarget.select()
+                      }}
+                      onChange={(event) => setEmbedUrlDraft(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          navigateEmbed()
+                          event.currentTarget.blur()
+                        } else if (event.key === 'Escape') {
+                          setEmbedUrlDraft(null)
+                          event.currentTarget.blur()
+                        }
+                      }}
+                      onBlur={() => setEmbedUrlDraft(null)}
+                      placeholder={embedState.loading ? 'Loading…' : undefined}
+                      className="min-w-0 flex-1 truncate bg-transparent py-0.5 text-[11px] text-slate-600 outline-none dark:text-slate-300"
+                    />
                   </span>
                   <button
                     onClick={() => window.api.embed.copyLink()}

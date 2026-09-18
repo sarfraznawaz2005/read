@@ -59,10 +59,21 @@
         overflow: hidden;
         min-width: 0;
       }
+      #url:focus-within {
+        border-color: #818cf8;
+      }
       #url-text {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        flex: 1;
+        min-width: 0;
+        border: none;
+        background: transparent;
+        color: #e2e8f0;
+        font-size: 12px;
+        font-family: inherit;
+        padding: 0;
+      }
+      #url-text:focus {
+        outline: none;
       }
       #spinner {
         width: 11px;
@@ -90,7 +101,10 @@
       <button id="back" title="Back">←</button>
       <button id="forward" title="Forward">→</button>
       <button id="reload" title="Reload">⟳</button>
-      <div id="url"><span id="spinner"></span><span id="url-text">Loading…</span></div>
+      <div id="url">
+        <span id="spinner"></span>
+        <input id="url-text" type="text" spellcheck="false" value="Loading…" />
+      </div>
       <button id="copy" title="Copy Link">🔗</button>
       <button id="external" title="Open in system browser">🌐</button>
       <button id="close" title="Close">✕</button>

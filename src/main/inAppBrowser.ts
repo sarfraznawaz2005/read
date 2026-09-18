@@ -58,6 +58,13 @@ function registerControlHandlers(): void {
   ipcMain.on('browser-chrome:reload', (event) => {
     entryForSender(event)?.view.webContents.reload()
   })
+  ipcMain.on('browser-chrome:navigate', (event, url: unknown) => {
+    if (typeof url !== 'string' || !url.trim()) return
+    const entry = entryForSender(event)
+    if (!entry) return
+    const target = /^[a-z][a-z0-9+.-]*:\/\//i.test(url) ? url : `https://${url}`
+    if (isHttpUrl(target)) void entry.view.webContents.loadURL(target).catch(() => {})
+  })
   ipcMain.on('browser-chrome:close', (event) => {
     entryForSender(event)?.win.close()
   })
