@@ -10,8 +10,8 @@ const STATUS_FILTERS: {
   value: ArticleStatusFilter
   countKey: Exclude<keyof ArticleCounts, 'byCategory'>
 }[] = [
-  { label: 'All Articles', value: 'all', countKey: 'all' },
   { label: 'Unread', value: 'unread', countKey: 'unread' },
+  { label: 'All Articles', value: 'all', countKey: 'all' },
   { label: 'Favorites', value: 'favorite', countKey: 'favorite' },
   { label: 'Archive', value: 'archived', countKey: 'archived' }
 ]
