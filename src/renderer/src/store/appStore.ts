@@ -55,7 +55,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   categories: [],
   articles: [],
   counts: { all: 0, unread: 0, favorite: 0, archived: 0, byCategory: {} },
-  filter: { status: 'all' },
+  filter: { status: 'unread' },
   loading: false,
   addingArticle: false,
   toast: null,
