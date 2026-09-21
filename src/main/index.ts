@@ -216,7 +216,7 @@ app.whenReady().then(() => {
   )
   registerEmbeddedViewHandlers(() => mainWindow)
 
-  app.setLoginItemSettings({ openAtLogin: getSettings().startWithWindows })
+  if (app.isPackaged) app.setLoginItemSettings({ openAtLogin: getSettings().startWithWindows })
 
   createWindow()
   scheduleFeedRefresh()

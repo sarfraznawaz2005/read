@@ -59,6 +59,7 @@ export const HighlightableContent = forwardRef<HighlightableContentHandle, { art
     const [commentPopover, setCommentPopover] = useState<CommentPopover | null>(null)
     const [commentDraft, setCommentDraft] = useState('')
     const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
+    const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
     const findStateRef = useRef<{
       matches: ReturnType<typeof findAllMatches>
       activeIndex: number
@@ -144,6 +145,23 @@ export const HighlightableContent = forwardRef<HighlightableContentHandle, { art
       const rect = selection.getRangeAt(0).getBoundingClientRect()
       setSelectionPopup({ x: rect.left, y: rect.top, anchor })
       setCommentPopover(null)
+    }
+
+    useEffect(() => {
+      if (!lightboxSrc) return
+      const handleKeyDown = (event: KeyboardEvent): void => {
+        if (event.key === 'Escape') setLightboxSrc(null)
+      }
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }, [lightboxSrc])
+
+    function handleContentClick(event: React.MouseEvent): void {
+      const target = event.target as HTMLElement
+      if (target.tagName === 'IMG') {
+        const src = target.getAttribute('src')
+        if (src) setLightboxSrc(src)
+      }
     }
 
     function handleContextMenu(event: React.MouseEvent): void {
@@ -235,7 +253,13 @@ export const HighlightableContent = forwardRef<HighlightableContentHandle, { art
 
     return (
       <div className="relative">
-        <div ref={containerRef} onMouseUp={handleMouseUp} onContextMenu={handleContextMenu} />
+        <div
+          ref={containerRef}
+          onMouseUp={handleMouseUp}
+          onContextMenu={handleContextMenu}
+          onClick={handleContentClick}
+          className="[&_img]:cursor-zoom-in [&_img]:transition-opacity [&_img]:hover:opacity-90"
+        />
 
         {selectionPopup && (
           <div
@@ -422,6 +446,26 @@ export const HighlightableContent = forwardRef<HighlightableContentHandle, { art
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {lightboxSrc && (
+          <div
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-8"
+            onClick={() => setLightboxSrc(null)}
+          >
+            <button
+              onClick={() => setLightboxSrc(null)}
+              className="absolute right-5 top-5 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <img
+              src={lightboxSrc}
+              alt=""
+              className="h-full w-full cursor-zoom-out rounded-lg object-contain shadow-2xl"
+            />
           </div>
         )}
       </div>

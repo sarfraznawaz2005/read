@@ -6,7 +6,7 @@ import { getSettings, updateSettings } from './repository'
 import type { AppSettings, BackupRecord } from '@shared/types'
 
 function applySideEffects(settings: AppSettings): void {
-  app.setLoginItemSettings({ openAtLogin: settings.startWithWindows })
+  if (app.isPackaged) app.setLoginItemSettings({ openAtLogin: settings.startWithWindows })
 }
 
 export const settingsHandlers = {
