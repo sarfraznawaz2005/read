@@ -58,7 +58,7 @@ export const feedHandlers = {
     refreshTrayUnreadState()
     return inserted
   },
-  'feed:refreshAll': async (): Promise<FeedScanResult> => scanAllFeeds('manual'),
+  'feed:refreshAll': async (): Promise<FeedScanResult> => scanAllFeeds(),
   'feed:delete': (_event: unknown, feedId: string): void => {
     deleteFeed(feedId)
     refreshTrayUnreadState()

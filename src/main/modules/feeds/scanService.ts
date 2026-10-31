@@ -53,16 +53,10 @@ export async function refreshFeedById(feedId: string): Promise<number> {
   }
 }
 
-function notifyScanResult(result: FeedScanResult, trigger: 'manual' | 'auto'): void {
-  if (result.feedsScanned === 0) return
-  if (result.newItems === 0 && result.feedsFailed === 0 && trigger === 'auto') return
+function notifyScanResult(result: FeedScanResult): void {
+  if (result.newItems === 0) return
 
-  const parts: string[] = []
-  parts.push(
-    result.newItems > 0
-      ? `${result.newItems} new article${result.newItems === 1 ? '' : 's'}`
-      : 'No new articles'
-  )
+  const parts = [`${result.newItems} new article${result.newItems === 1 ? '' : 's'}`]
   if (result.feedsFailed > 0) {
     parts.push(`${result.feedsFailed} feed${result.feedsFailed === 1 ? '' : 's'} failed`)
   }
@@ -72,7 +66,7 @@ function notifyScanResult(result: FeedScanResult, trigger: 'manual' | 'auto'): v
   })
 }
 
-async function runScan(trigger: 'manual' | 'auto'): Promise<FeedScanResult> {
+async function runScan(): Promise<FeedScanResult> {
   const feeds = listFeeds()
   let newItems = 0
   let feedsFailed = 0
@@ -92,19 +86,19 @@ async function runScan(trigger: 'manual' | 'auto'): Promise<FeedScanResult> {
   if (maxAgeDays > 0) pruneExpiredFeedItems(maxAgeDays)
 
   const result: FeedScanResult = { newItems, feedsScanned: feeds.length, feedsFailed }
-  notifyScanResult(result, trigger)
+  notifyScanResult(result)
   refreshTrayUnreadState()
   getMainWindow()?.webContents.send('feeds:scanFinished', result)
   return result
 }
 
 // A manual scan and the automatic timer scan can overlap; sharing one in-flight
-// promise guarantees exactly one notification per scan instead of two.
+// promise guarantees at most one notification per scan instead of two.
 let inFlightScan: Promise<FeedScanResult> | null = null
 
-export async function scanAllFeeds(trigger: 'manual' | 'auto' = 'manual'): Promise<FeedScanResult> {
+export async function scanAllFeeds(): Promise<FeedScanResult> {
   if (inFlightScan) return inFlightScan
-  inFlightScan = runScan(trigger).finally(() => {
+  inFlightScan = runScan().finally(() => {
     inFlightScan = null
   })
   return inFlightScan

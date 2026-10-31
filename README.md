@@ -23,7 +23,7 @@ A local-first, read-it-later desktop app for Windows/macOS/Linux, built with Ele
 
 - Subscribe to feeds, rename or bulk-delete them, import/export subscriptions via OPML.
 - Automatic background scanning on a configurable interval, plus manual "Refresh All".
-- Exactly one desktop notification per scan (manual or automatic) summarizing new articles and any feeds that failed, plus one notification per OPML import.
+- One desktop notification per scan (manual or automatic) that finds new articles, summarizing them and any feeds that failed, plus one notification per OPML import. Scans with no new articles stay silent.
 - Feeds that stop responding are flagged in bold red with a warning icon so you can clean them up.
 - Unread counts per feed and in total, with unread-first sorting and a "Mark all read" action.
 - An "All Entries" combined view across every feed, opened by default with the latest item auto-selected.

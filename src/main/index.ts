@@ -180,7 +180,7 @@ function scheduleFeedRefresh(): void {
   const minutes = Math.max(5, getSettings().feedScanIntervalMinutes)
   setTimeout(
     () => {
-      void scanAllFeeds('auto')
+      void scanAllFeeds()
         .catch(() => {})
         .finally(scheduleFeedRefresh)
     },
