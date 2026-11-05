@@ -192,7 +192,12 @@ export function upsertFeedItems(feedId: string, items: IncomingFeedItem[]): numb
   return inserted
 }
 
-const ITEM_ORDER_BY = 'is_read ASC, published_at DESC, fetched_at DESC'
+// Newest first, regardless of read state. Sorting unread first used to push newer read items
+// below older unread ones, and the total-entries cap (pruneOldFeedItems) then pruned those newer
+// items, so after "mark all read" recent articles were missing. datetime() normalizes ISO
+// published_at and SQLite-style fetched_at so items without a publish date still sort by time.
+const ITEM_ORDER_BY =
+  'COALESCE(datetime(published_at), datetime(fetched_at)) DESC, datetime(fetched_at) DESC'
 
 export function listFeedItems(feedId: string): FeedItem[] {
   const db = getDb()
@@ -261,7 +266,7 @@ export function pruneOldFeedItems(maxTotal: number): number {
          AND id NOT IN (
            SELECT id FROM feed_items
            WHERE is_pruned = 0
-           ORDER BY is_read ASC, published_at DESC, fetched_at DESC LIMIT ?
+           ORDER BY ${ITEM_ORDER_BY} LIMIT ?
          )`
     )
     .run(maxTotal)
